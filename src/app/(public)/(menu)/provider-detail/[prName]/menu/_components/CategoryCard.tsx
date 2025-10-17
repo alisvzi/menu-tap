@@ -1,3 +1,4 @@
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Item,
   ItemActions,
@@ -15,13 +16,14 @@ const CategoryCard = ({ cat }) => {
     <Item asChild role="listitem" className="shadow-md">
       <Link href={`menu/items?category=${cat.nameEn}`}>
         <ItemMedia variant="image">
-          <Image
-            src={cat.image}
-            alt={cat.nameFa}
-            width={20}
-            height={20}
-            className="w-20 h-20 object-cover"
-          />
+          <AspectRatio ratio={1 / 1} className="bg-muted rounded-lg">
+            <Image
+              src={cat.image}
+              alt={cat.nameFa}
+              fill
+              className="h-full w-full object-cover"
+            />
+          </AspectRatio>
         </ItemMedia>
         <ItemContent>
           <ItemTitle className="line-clamp-1">{cat.nameFa}</ItemTitle>

@@ -24,11 +24,6 @@ interface MenuItemProps {
   isFeatured?: boolean;
 }
 
-/**
- * MenuItem (Mobile Optimized)
- * - حالت ویژه: عمودی با بج 🔥 پیشنهاد مجموعه
- * - حالت عادی: سطری با قیمت برجسته مشابه حالت ویژه
- */
 export default function MenuItem({
   image = "/provider.webp",
   nameFa = "خوراک نمونه",
@@ -40,7 +35,6 @@ export default function MenuItem({
 }: MenuItemProps) {
   const ing = Array.isArray(ingredients) ? ingredients.join("، ") : ingredients;
 
-  // حالت ویژه (عمودی)
   if (isFeatured) {
     return (
       <Item className="w-full rounded-2xl border border-border bg-card shadow-sm overflow-hidden flex flex-col">
@@ -48,12 +42,15 @@ export default function MenuItem({
           <Image
             src={image}
             alt={`${nameFa} - ${nameEn}`}
-            width={100}
-            height={33}
+            width={300}
+            height={133}
             className="w-full h-33 object-cover"
           />
-          <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded-full shadow">
-            <Flame className="fill-red-700 stroke-red-700 " /> پیشنهاد مجموعه
+          <Badge
+            variant="destructive"
+            className="absolute top-2 right-2 shadow"
+          >
+            <Flame className="fill-white stroke-white " /> پیشنهاد مجموعه
           </Badge>
         </div>
 
@@ -93,16 +90,18 @@ export default function MenuItem({
     >
       <ItemMedia>
         <div className="w-24 h-24 overflow-hidden rounded-xl">
-          <img
+          <Image
             src={image}
             alt={`${nameFa} - ${nameEn}`}
-            className="object-cover w-full h-full"
+            width={150}
+            height={150}
+            className="w-24 h-24 object-cover"
           />
         </div>
       </ItemMedia>
 
       <ItemContent className="flex-1 min-w-0 flex flex-col justify-between">
-        <ItemHeader>
+        <ItemHeader className="flex-wrap">
           <ItemTitle>
             <h3 className="text-base font-semibold text-card-foreground truncate">
               {nameFa}

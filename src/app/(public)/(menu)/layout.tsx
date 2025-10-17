@@ -8,7 +8,9 @@ export default function MenuLayout({
   return (
     <>
       <Header />
-      <main className="max-w-xl mx-auto shadow-2xl">{children}</main>
+      <main className="max-w-xl mx-auto shadow-2xl overflow-hidden">
+        {children}
+      </main>
     </>
   );
 }

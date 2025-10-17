@@ -1,4 +1,5 @@
 import { ItemGroup } from "@/components/ui/item";
+import FadeInItem from "@/providers/FadeInItem";
 import CategoryCard from "./CategoryCard";
 
 const categories = [
@@ -66,8 +67,10 @@ const CategoryList = () => {
       <h2 className="text-xl font-semibold my-6">دسته‌بندی‌های منو</h2>
 
       <ItemGroup className="gap-3">
-        {categories.map((cat) => (
-          <CategoryCard key={cat.id} cat={cat} />
+        {categories.map((cat, i) => (
+          <FadeInItem key={cat.id} delay={i * 100}>
+            <CategoryCard cat={cat} />
+          </FadeInItem>
         ))}
       </ItemGroup>
     </div>

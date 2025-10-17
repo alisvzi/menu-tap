@@ -1,6 +1,7 @@
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
 const vazirmatn = localFont({
@@ -67,6 +68,7 @@ export default async function RootLayout({
         className={`antialiased min-h-screen bg-background text-foreground`}
         suppressHydrationWarning
       >
+        <NextTopLoader showSpinner={false} color="var(--color-primary)" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
