@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 const HeroSection = () => {
   return (
@@ -26,16 +27,20 @@ const HeroSection = () => {
             <Button
               size="lg"
               className="premium-button text-lg px-8 py-4 shadow-xl"
+              asChild
             >
-              شروع رایگان
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <Link href="/auth/register">
+                شروع رایگان
+                <ArrowLeft className="w-5 h-5 mr-2" />
+              </Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="border-rose-gold text-rose-gold hover:bg-rose-gold/10 text-lg px-8 py-4"
+              asChild
             >
-              مشاهده دمو
+              <Link href="/provider-detail/demo">مشاهده دمو</Link>
             </Button>
           </div>
 
