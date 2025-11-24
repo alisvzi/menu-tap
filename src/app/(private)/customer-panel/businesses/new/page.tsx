@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/lib/auth/context";
 import { ErrorHandler } from "@/lib/errors";
 import { BusinessProfileData } from "@/types/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -109,7 +108,6 @@ const FEATURES = [
 
 export default function BusinessProfilePage() {
   const router = useRouter();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
@@ -1303,7 +1301,7 @@ export default function BusinessProfilePage() {
               ) : (
                 <>
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  تکمیل پروفیل
+                  تکمیل پروفایل
                 </>
               )}
             </Button>
