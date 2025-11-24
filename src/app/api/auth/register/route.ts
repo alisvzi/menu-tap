@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db/connection";
+import { connectDB } from "@/lib/db/connection";
+import { handleApiError } from "@/lib/errors";
 import User from "@/lib/models/User";
 import jwt from "jsonwebtoken";
-import { handleApiError } from "@/lib/errors";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const body = await request.json();
     const { email, password, firstName, lastName, phone } = body;
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: "User already exists with this email" },
-        { status: 409 },
+        { status: 409 }
       );
     }
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
       process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" },
+      { expiresIn: "7d" }
     );
 
     // Create response
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         },
         token,
       },
-      { status: 201 },
+      { status: 201 }
     );
 
     // Set HTTP-only cookie
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }

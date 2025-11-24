@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db/connection";
+import { connectDB } from "@/lib/db/connection";
+import { handleApiError } from "@/lib/errors";
 import User from "@/lib/models/User";
 import jwt from "jsonwebtoken";
-import { handleApiError } from "@/lib/errors";
+import { NextRequest, NextResponse } from "next/server";
 
 // Helper function to verify JWT token
 async function verifyToken(request: NextRequest) {
@@ -16,7 +16,7 @@ async function verifyToken(request: NextRequest) {
 
   const decoded = jwt.verify(
     token,
-    process.env.JWT_SECRET || "your-secret-key",
+    process.env.JWT_SECRET || "your-secret-key"
   ) as any;
   return decoded;
 }
@@ -24,8 +24,7 @@ async function verifyToken(request: NextRequest) {
 // GET /api/auth/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
-
+    await connectDB();
     const decoded = await verifyToken(request);
 
     const user = await User.findById(decoded.userId).select("-password");
@@ -56,7 +55,7 @@ export async function GET(request: NextRequest) {
         error: errorResponse.error,
         code: errorResponse.code,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }
@@ -64,7 +63,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/auth/profile - Update user profile
 export async function PUT(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const decoded = await verifyToken(request);
     const body = await request.json();
@@ -117,7 +116,7 @@ export async function PUT(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }
@@ -125,7 +124,7 @@ export async function PUT(request: NextRequest) {
 // PATCH /api/auth/profile - Partial update user profile
 export async function PATCH(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const decoded = await verifyToken(request);
     const body = await request.json();
@@ -133,7 +132,7 @@ export async function PATCH(request: NextRequest) {
     const updatedUser = await User.findByIdAndUpdate(
       decoded.userId,
       { $set: body },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     ).select("-password");
 
     if (!updatedUser) {
@@ -163,7 +162,7 @@ export async function PATCH(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }

@@ -10,7 +10,7 @@ export class AppError extends Error {
     statusCode: number = 500,
     isOperational: boolean = true,
     code?: string,
-    details?: any
+    details?: any,
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -25,49 +25,49 @@ export class AppError extends Error {
 
 export class ValidationError extends AppError {
   constructor(message: string, details?: any) {
-    super(message, 400, true, 'VALIDATION_ERROR', details);
+    super(message, 400, true, "VALIDATION_ERROR", details);
   }
 }
 
 export class AuthenticationError extends AppError {
-  constructor(message: string = 'Authentication required') {
-    super(message, 401, true, 'AUTHENTICATION_ERROR');
+  constructor(message: string = "Authentication required") {
+    super(message, 401, true, "AUTHENTICATION_ERROR");
   }
 }
 
 export class AuthorizationError extends AppError {
-  constructor(message: string = 'Insufficient permissions') {
-    super(message, 403, true, 'AUTHORIZATION_ERROR');
+  constructor(message: string = "Insufficient permissions") {
+    super(message, 403, true, "AUTHORIZATION_ERROR");
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message: string = 'Resource not found') {
-    super(message, 404, true, 'NOT_FOUND_ERROR');
+  constructor(message: string = "Resource not found") {
+    super(message, 404, true, "NOT_FOUND_ERROR");
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message: string = 'Resource already exists') {
-    super(message, 409, true, 'CONFLICT_ERROR');
+  constructor(message: string = "Resource already exists") {
+    super(message, 409, true, "CONFLICT_ERROR");
   }
 }
 
 export class RateLimitError extends AppError {
-  constructor(message: string = 'Too many requests') {
-    super(message, 429, true, 'RATE_LIMIT_ERROR');
+  constructor(message: string = "Too many requests") {
+    super(message, 429, true, "RATE_LIMIT_ERROR");
   }
 }
 
 export class DatabaseError extends AppError {
-  constructor(message: string = 'Database operation failed') {
-    super(message, 500, true, 'DATABASE_ERROR');
+  constructor(message: string = "Database operation failed") {
+    super(message, 500, true, "DATABASE_ERROR");
   }
 }
 
 export class ExternalServiceError extends AppError {
-  constructor(message: string = 'External service error') {
-    super(message, 502, true, 'EXTERNAL_SERVICE_ERROR');
+  constructor(message: string = "External service error") {
+    super(message, 502, true, "EXTERNAL_SERVICE_ERROR");
   }
 }
 
@@ -79,7 +79,7 @@ export function handleApiError(error: unknown): {
   details?: any;
   timestamp: string;
 } {
-  console.error('API Error:', error);
+  console.error("API Error:", error);
 
   if (error instanceof AppError) {
     return {
@@ -93,7 +93,7 @@ export function handleApiError(error: unknown): {
 
   if (error instanceof Error) {
     // Handle Mongoose validation errors
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const details = Object.values((error as any).errors).map((err: any) => ({
         field: err.path,
         message: err.message,
@@ -101,20 +101,20 @@ export function handleApiError(error: unknown): {
       }));
 
       return {
-        error: 'Validation failed',
+        error: "Validation failed",
         statusCode: 400,
-        code: 'VALIDATION_ERROR',
+        code: "VALIDATION_ERROR",
         details,
         timestamp: new Date().toISOString(),
       };
     }
 
     // Handle Mongoose cast errors
-    if (error.name === 'CastError') {
+    if (error.name === "CastError") {
       return {
-        error: 'Invalid ID format',
+        error: "Invalid ID format",
         statusCode: 400,
-        code: 'INVALID_ID',
+        code: "INVALID_ID",
         timestamp: new Date().toISOString(),
       };
     }
@@ -125,27 +125,27 @@ export function handleApiError(error: unknown): {
       return {
         error: `${field} already exists`,
         statusCode: 409,
-        code: 'DUPLICATE_KEY',
+        code: "DUPLICATE_KEY",
         details: { field, value: (error as any).keyValue[field] },
         timestamp: new Date().toISOString(),
       };
     }
 
     // Handle JWT errors
-    if (error.name === 'JsonWebTokenError') {
+    if (error.name === "JsonWebTokenError") {
       return {
-        error: 'Invalid token',
+        error: "Invalid token",
         statusCode: 401,
-        code: 'INVALID_TOKEN',
+        code: "INVALID_TOKEN",
         timestamp: new Date().toISOString(),
       };
     }
 
-    if (error.name === 'TokenExpiredError') {
+    if (error.name === "TokenExpiredError") {
       return {
-        error: 'Token expired',
+        error: "Token expired",
         statusCode: 401,
-        code: 'TOKEN_EXPIRED',
+        code: "TOKEN_EXPIRED",
         timestamp: new Date().toISOString(),
       };
     }
@@ -153,9 +153,9 @@ export function handleApiError(error: unknown): {
 
   // Default error
   return {
-    error: 'Internal server error',
+    error: "Internal server error",
     statusCode: 500,
-    code: 'INTERNAL_ERROR',
+    code: "INTERNAL_ERROR",
     timestamp: new Date().toISOString(),
   };
 }
@@ -168,7 +168,7 @@ export class ErrorHandler {
     statusCode?: number;
     details?: any;
   } {
-    console.error('Client Error:', error);
+    console.error("Client Error:", error);
 
     if (error instanceof AppError) {
       return {
@@ -185,10 +185,10 @@ export class ErrorHandler {
       };
     }
 
-    if (typeof error === 'object' && error !== null) {
+    if (typeof error === "object" && error !== null) {
       const err = error as any;
       return {
-        message: err.error || err.message || 'An error occurred',
+        message: err.error || err.message || "An error occurred",
         code: err.code,
         statusCode: err.statusCode,
         details: err.details,
@@ -196,7 +196,7 @@ export class ErrorHandler {
     }
 
     return {
-      message: 'An unexpected error occurred',
+      message: "An unexpected error occurred",
     };
   }
 
@@ -208,18 +208,18 @@ export class ErrorHandler {
         response.status,
         true,
         errorData.code,
-        errorData.details
+        errorData.details,
       );
     }
     return response;
   }
 
   static isNetworkError(error: unknown): boolean {
-    return error instanceof TypeError && error.message.includes('fetch');
+    return error instanceof TypeError && error.message.includes("fetch");
   }
 
   static isTimeoutError(error: unknown): boolean {
-    return error instanceof Error && error.message.includes('timeout');
+    return error instanceof Error && error.message.includes("timeout");
   }
 }
 
@@ -228,7 +228,7 @@ export function formatValidationErrors(errors: any[]): Record<string, string> {
   const formatted: Record<string, string> = {};
 
   errors.forEach((error) => {
-    if (typeof error === 'object' && error.field && error.message) {
+    if (typeof error === "object" && error.field && error.message) {
       formatted[error.field] = error.message;
     }
   });
@@ -240,7 +240,7 @@ export function formatValidationErrors(errors: any[]): Record<string, string> {
 export async function withRetry<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelay: number = 1000
+  baseDelay: number = 1000,
 ): Promise<T> {
   let lastError: unknown;
 
@@ -265,7 +265,7 @@ export async function withRetry<T>(
 
       // Exponential backoff with jitter
       const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
@@ -279,7 +279,7 @@ export class ErrorBoundary {
   }
 
   static componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error Boundary caught an error:', error, errorInfo);
+    console.error("Error Boundary caught an error:", error, errorInfo);
 
     // Here you could send error to logging service
     // logErrorToService(error, errorInfo);
@@ -289,26 +289,39 @@ export class ErrorBoundary {
 // Logging utilities
 export const logger = {
   error: (message: string, error?: unknown, context?: any) => {
-    console.error(`[ERROR] ${message}`, { error, context, timestamp: new Date().toISOString() });
+    console.error(`[ERROR] ${message}`, {
+      error,
+      context,
+      timestamp: new Date().toISOString(),
+    });
   },
 
   warn: (message: string, context?: any) => {
-    console.warn(`[WARN] ${message}`, { context, timestamp: new Date().toISOString() });
+    console.warn(`[WARN] ${message}`, {
+      context,
+      timestamp: new Date().toISOString(),
+    });
   },
 
   info: (message: string, context?: any) => {
-    console.info(`[INFO] ${message}`, { context, timestamp: new Date().toISOString() });
+    console.info(`[INFO] ${message}`, {
+      context,
+      timestamp: new Date().toISOString(),
+    });
   },
 
   debug: (message: string, context?: any) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(`[DEBUG] ${message}`, { context, timestamp: new Date().toISOString() });
+    if (process.env.NODE_ENV === "development") {
+      console.debug(`[DEBUG] ${message}`, {
+        context,
+        timestamp: new Date().toISOString(),
+      });
     }
-  }
+  },
 };
 
 // Error reporting (placeholder for external service integration)
 export async function reportError(error: Error, context?: any) {
   // In production, you would integrate with services like Sentry, Bugsnag, etc.
-  logger.error('Reported error', error, context);
+  logger.error("Reported error", error, context);
 }

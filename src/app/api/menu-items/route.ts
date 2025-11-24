@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db/connection";
-import MenuItem from "@/lib/models/MenuItem";
+import { connectDB } from "@/lib/db/connection";
+import { handleApiError } from "@/lib/errors";
 import Category from "@/lib/models/Category";
+import MenuItem from "@/lib/models/MenuItem";
 import User from "@/lib/models/User";
 import jwt from "jsonwebtoken";
-import { handleApiError } from "@/lib/errors";
+import { NextRequest, NextResponse } from "next/server";
 
 // Helper function to verify JWT token
 async function verifyToken(request: NextRequest) {
@@ -18,7 +18,7 @@ async function verifyToken(request: NextRequest) {
 
   const decoded = jwt.verify(
     token,
-    process.env.JWT_SECRET || "your-secret-key",
+    process.env.JWT_SECRET || "your-secret-key"
   ) as any;
   return decoded;
 }
@@ -26,7 +26,7 @@ async function verifyToken(request: NextRequest) {
 // GET /api/menu-items - Get menu items by user or category
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         return NextResponse.json(
           { error: "User ID, Category ID required or valid token needed" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
 // POST /api/menu-items - Create a new menu item
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     // Verify authentication
     const decoded = await verifyToken(request);
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
     if (!category || !name || price === undefined) {
       return NextResponse.json(
         { error: "Category ID, name, and price are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
     if (!user.business?.isCompleted) {
       return NextResponse.json(
         { error: "Please complete your business profile first" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -211,14 +211,14 @@ export async function POST(request: NextRequest) {
     if (!categoryDoc) {
       return NextResponse.json(
         { error: "Category not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (categoryDoc.user.toString() !== decoded.userId) {
       return NextResponse.json(
         { error: "Category does not belong to you" },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
       if (existingMenuItem) {
         return NextResponse.json(
           { error: "Menu item slug already exists" },
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
 
       // Ensure uniqueness within user's menu items
       let counter = 1;
-      let originalSlug = menuItemSlug;
+      const originalSlug = menuItemSlug;
       while (
         await MenuItem.findOne({ user: decoded.userId, slug: menuItemSlug })
       ) {
@@ -328,7 +328,7 @@ export async function POST(request: NextRequest) {
         message: "Menu item created successfully",
         menuItem,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error: any) {
     console.error("Create menu item error:", error);
@@ -339,7 +339,7 @@ export async function POST(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }

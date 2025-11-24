@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db/connection";
+import { connectDB } from "@/lib/db/connection";
+import { handleApiError } from "@/lib/errors";
 import User from "@/lib/models/User";
 import jwt from "jsonwebtoken";
-import { handleApiError } from "@/lib/errors";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     // Get token from header
     const token = request.headers.get("Authorization")?.replace("Bearer ", "");
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Verify token
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || "your-secret-key",
+      process.env.JWT_SECRET || "your-secret-key"
     ) as any;
 
     // Find user
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         error: errorResponse.error,
         code: errorResponse.code,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }

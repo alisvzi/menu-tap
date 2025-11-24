@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db/connection";
+import { connectDB } from "@/lib/db/connection";
+import { handleApiError } from "@/lib/errors";
 import Category from "@/lib/models/Category";
 import User from "@/lib/models/User";
 import jwt from "jsonwebtoken";
-import { handleApiError } from "@/lib/errors";
+import { NextRequest, NextResponse } from "next/server";
 
 // Helper function to verify JWT token
 async function verifyToken(request: NextRequest) {
@@ -17,7 +17,7 @@ async function verifyToken(request: NextRequest) {
 
   const decoded = jwt.verify(
     token,
-    process.env.JWT_SECRET || "your-secret-key",
+    process.env.JWT_SECRET || "your-secret-key"
   ) as any;
   return decoded;
 }
@@ -25,7 +25,7 @@ async function verifyToken(request: NextRequest) {
 // GET /api/categories - Get categories by user
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         return NextResponse.json(
           { error: "User ID required or valid token needed" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
 // POST /api/categories - Create a new category
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
+    await connectDB();
 
     // Verify authentication
     const decoded = await verifyToken(request);
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     if (!name) {
       return NextResponse.json(
         { error: "Category name is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     if (!user.business?.isCompleted) {
       return NextResponse.json(
         { error: "Please complete your business profile first" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       if (existingCategory) {
         return NextResponse.json(
           { error: "Category slug already exists" },
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
 
       // Ensure uniqueness within user's categories
       let counter = 1;
-      let originalSlug = categorySlug;
+      const originalSlug = categorySlug;
       while (
         await Category.findOne({ user: decoded.userId, slug: categorySlug })
       ) {
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
         message: "Category created successfully",
         category,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error: any) {
     console.error("Create category error:", error);
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
         error: errorResponse.error,
         details: errorResponse.details,
       },
-      { status: errorResponse.statusCode },
+      { status: errorResponse.statusCode }
     );
   }
 }
