@@ -19,3 +19,4 @@ const Providers = async () => {
 };
 
 export default Providers;
+export const dynamic = "force-dynamic";

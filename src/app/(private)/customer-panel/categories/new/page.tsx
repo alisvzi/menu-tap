@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { uploadFiles } from "@/utility/uploads";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -36,6 +37,8 @@ export default function NewCategoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const businessId = searchParams.get("businessId") || "";
+  const [providers, setProviders] = useState<Array<{ _id: string; name: string; isCompleted: boolean }>>([]);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string>(businessId);
 
   const [formData, setFormData] = useState<CategoryInput>({
     name: "",
@@ -111,7 +114,7 @@ export default function NewCategoryPage() {
       toast.error("لطفاً خطاهای فرم را برطرف کنید");
       return;
     }
-    if (!businessId) {
+    if (!selectedBusinessId) {
       toast.error("ابتدا مجموعه را انتخاب کنید");
       return;
     }
@@ -120,20 +123,44 @@ export default function NewCategoryPage() {
       const response = await fetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, business: businessId }),
+        body: JSON.stringify({ ...formData, business: selectedBusinessId }),
       });
       const json = await response.json();
       if (!response.ok) {
         throw new Error(json?.error || "ایجاد دسته‌بندی ناموفق بود");
       }
       toast.success("دسته‌بندی با موفقیت ایجاد شد");
-      router.push(`/customer-panel/categories?businessId=${businessId}`);
+      router.push(`/customer-panel/categories?businessId=${selectedBusinessId}`);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/providers?owner=me&limit=100");
+        if (res.ok) {
+          const data = await res.json();
+          const list = (data.data || data.businesses || []) as Array<{
+            _id: string;
+            name: string;
+            isCompleted: boolean;
+          }>;
+          setProviders(list);
+          if (!selectedBusinessId) {
+            const first = list.find((p) => p.isCompleted) || list[0];
+            setSelectedBusinessId(first?._id || "");
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching providers:", e);
+        toast.error("خطا در بارگذاری مجموعه‌ها");
+      }
+    })();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -143,8 +170,23 @@ export default function NewCategoryPage() {
           <p className="text-muted-foreground">ایجاد دسته‌بندی برای منوی مجموعه</p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Label>مجموعه:</Label>
+            <Select value={selectedBusinessId} onValueChange={setSelectedBusinessId}>
+              <SelectTrigger className="min-w-[220px]">
+                <SelectValue placeholder="انتخاب مجموعه" />
+              </SelectTrigger>
+              <SelectContent>
+                {providers.map((p) => (
+                  <SelectItem key={p._id} value={p._id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button variant="outline" asChild>
-            <Link href={`/customer-panel/categories?businessId=${businessId}`}>بازگشت</Link>
+            <Link href={`/customer-panel/categories?businessId=${selectedBusinessId}`}>بازگشت</Link>
           </Button>
           <Button onClick={handleCreateCategory} disabled={submitting}>
             {submitting ? "در حال ایجاد..." : "ایجاد دسته‌بندی"}

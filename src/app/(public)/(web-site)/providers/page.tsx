@@ -18,6 +18,8 @@ interface ProvidersPageProps {
 
 const mockData = SkeletonData.providers;
 
+export const dynamic = "force-dynamic";
+
 const Providers = ({ searchParams }: ProvidersPageProps) => {
   const searchBox = (
     <div className="flex items-center relative max-w-xl mx-auto">
