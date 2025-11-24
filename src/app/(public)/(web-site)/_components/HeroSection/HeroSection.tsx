@@ -11,7 +11,7 @@ const HeroSection = () => {
             <Sparkles className="w-4 h-4" />
             <span>منوی دیجیتال هوشمند</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+          <h1 className="text-xl md:text-5xl font-bold mb-6 leading-tight">
             <span className="text-rose-gold alexandria">منوتپ</span>
             <br />
             <br />
@@ -19,14 +19,14 @@ const HeroSection = () => {
               منوی دیجیتال کسب‌وکار شما
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+          <p className="md:text-xl text-muted-foreground mb-8 leading-relaxed">
             ارائه‌دهنده منوی دیجیتال هوشمند و مدرن برای رستوران‌ها، کافه‌ها،
             آبمیوه‌فروشی‌ها و تمام کسب‌وکارهای غذایی
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
-              className="premium-button text-lg px-8 py-4 shadow-xl"
+              className="premium-button md:text-lg px-8 py-4 shadow-xl"
               asChild
             >
               <Link href="/auth/register">
@@ -37,7 +37,7 @@ const HeroSection = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-rose-gold text-rose-gold hover:bg-rose-gold/10 text-lg px-8 py-4"
+              className="border-rose-gold text-rose-gold hover:bg-rose-gold/10 md:text-lg px-7 py-4"
               asChild
             >
               <Link href="/provider-detail/demo">مشاهده دمو</Link>

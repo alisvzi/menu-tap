@@ -1,6 +1,11 @@
 import { Sparkles } from "lucide-react";
 
-const BannerInfo = ({ title, node }) => {
+interface BannerInfoProps {
+  title: string;
+  node: React.ReactNode;
+}
+
+const BannerInfo = ({ title, node }: BannerInfoProps) => {
   return (
     <section className="pt-24 pb-16 px-4 hero-pattern">
       <div className="container">

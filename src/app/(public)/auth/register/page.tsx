@@ -1,14 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth/context";
-import { RegisterData } from "@/types/auth";
-import { ErrorHandler } from "@/lib/errors";
+import { Form, FormField } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -17,19 +10,33 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Form, FormField, Field } from "@/components/forms/field";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  User,
-  Mail,
-  Lock,
-  Phone,
-  Eye,
-  EyeOff,
-  UserPlus,
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth/context";
+import { ErrorHandler } from "@/lib/errors";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
   AlertCircle,
   CheckCircle,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Phone,
   Store,
+  UserPlus,
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { registerSchema } from "./_types/register-schema";
 
 export default function RegisterPage() {
   const { register, isLoading } = useAuth();
@@ -37,7 +44,8 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const form = useForm<RegisterData>({
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -49,19 +57,9 @@ export default function RegisterPage() {
     },
   });
 
-  const onSubmit = async (data: RegisterData) => {
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
       setError("");
-
-      if (data.password !== data.confirmPassword) {
-        setError("رمز عبور و تأیید آن مطابقت ندارند");
-        return;
-      }
-
-      if (!data.acceptTerms) {
-        setError("لطفاً شرایط و قوانین را بپذیرید");
-        return;
-      }
 
       await register(data);
     } catch (err) {
@@ -72,7 +70,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-xl">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <UserPlus className="w-8 h-8 text-primary-foreground" />
@@ -109,20 +107,20 @@ export default function RegisterPage() {
                   <FormField
                     control={form.control}
                     name="firstName"
-                    rules={{
-                      required: "نام الزامی است",
-                      maxLength: {
-                        value: 50,
-                        message: "نام نمی‌تواند بیش از ۵۰ کاراکتر باشد",
-                      },
-                    }}
                     render={({ field }) => (
-                      <Field label="نام" required>
+                      <Field>
+                        <FieldLabel>نام *</FieldLabel>
                         <Input
                           {...field}
                           placeholder="نام خود را وارد کنید"
                           disabled={isLoading}
+                          data-invalid={!!form.formState.errors.firstName}
                         />
+                        {form.formState.errors.firstName && (
+                          <FieldError>
+                            {form.formState.errors.firstName.message?.toString()}
+                          </FieldError>
+                        )}
                       </Field>
                     )}
                   />
@@ -130,21 +128,20 @@ export default function RegisterPage() {
                   <FormField
                     control={form.control}
                     name="lastName"
-                    rules={{
-                      required: "نام خانوادگی الزامی است",
-                      maxLength: {
-                        value: 50,
-                        message:
-                          "نام خانوادگی نمی‌تواند بیش از ۵۰ کاراکتر باشد",
-                      },
-                    }}
                     render={({ field }) => (
-                      <Field label="نام خانوادگی" required>
+                      <Field>
+                        <FieldLabel>نام خانوادگی *</FieldLabel>
                         <Input
                           {...field}
                           placeholder="نام خانوادگی خود را وارد کنید"
                           disabled={isLoading}
+                          data-invalid={!!form.formState.errors.lastName}
                         />
+                        {form.formState.errors.lastName && (
+                          <FieldError>
+                            {form.formState.errors.lastName.message?.toString()}
+                          </FieldError>
+                        )}
                       </Field>
                     )}
                   />
@@ -153,19 +150,9 @@ export default function RegisterPage() {
                 <FormField
                   control={form.control}
                   name="email"
-                  rules={{
-                    required: "ایمیل الزامی است",
-                    pattern: {
-                      value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                      message: "فرمت ایمیل صحیح نیست",
-                    },
-                  }}
                   render={({ field }) => (
-                    <Field
-                      label="ایمیل"
-                      required
-                      description="برای ورود و دریافت اطلاعیه‌ها استفاده می‌شود"
-                    >
+                    <Field>
+                      <FieldLabel>ایمیل *</FieldLabel>
                       <div className="relative">
                         <Mail className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -175,8 +162,17 @@ export default function RegisterPage() {
                           className="pr-9"
                           autoComplete="email"
                           disabled={isLoading}
+                          data-invalid={!!form.formState.errors.email}
                         />
                       </div>
+                      <FieldDescription>
+                        برای ورود و دریافت اطلاعیه‌ها استفاده می‌شود
+                      </FieldDescription>
+                      {form.formState.errors.email && (
+                        <FieldError>
+                          {form.formState.errors.email.message?.toString()}
+                        </FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -184,17 +180,9 @@ export default function RegisterPage() {
                 <FormField
                   control={form.control}
                   name="phone"
-                  rules={{
-                    pattern: {
-                      value: /^09[0-9]{9}$/,
-                      message: "شماره تلفن باید با ۰۹ شروع شده و ۱۱ رقم باشد",
-                    },
-                  }}
                   render={({ field }) => (
-                    <Field
-                      label="شماره تلفن"
-                      description="اختیاری - برای تماس و ارسال پیامک"
-                    >
+                    <Field>
+                      <FieldLabel>شماره تلفن</FieldLabel>
                       <div className="relative">
                         <Phone className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -203,8 +191,17 @@ export default function RegisterPage() {
                           placeholder="09xxxxxxxxx"
                           className="pr-9"
                           disabled={isLoading}
+                          data-invalid={!!form.formState.errors.phone}
                         />
                       </div>
+                      <FieldDescription>
+                        اختیاری - برای تماس و ارسال پیامک
+                      </FieldDescription>
+                      {form.formState.errors.phone && (
+                        <FieldError>
+                          {form.formState.errors.phone.message?.toString()}
+                        </FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -213,15 +210,9 @@ export default function RegisterPage() {
                   <FormField
                     control={form.control}
                     name="password"
-                    rules={{
-                      required: "رمز عبور الزامی است",
-                      minLength: {
-                        value: 6,
-                        message: "رمز عبور باید حداقل ۶ کاراکتر باشد",
-                      },
-                    }}
                     render={({ field }) => (
-                      <Field label="رمز عبور" required>
+                      <Field>
+                        <FieldLabel>رمز عبور *</FieldLabel>
                         <div className="relative">
                           <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -231,6 +222,7 @@ export default function RegisterPage() {
                             className="pr-9 pl-9"
                             autoComplete="new-password"
                             disabled={isLoading}
+                            data-invalid={!!form.formState.errors.password}
                           />
                           <button
                             type="button"
@@ -245,6 +237,11 @@ export default function RegisterPage() {
                             )}
                           </button>
                         </div>
+                        {form.formState.errors.password && (
+                          <FieldError>
+                            {form.formState.errors.password.message?.toString()}
+                          </FieldError>
+                        )}
                       </Field>
                     )}
                   />
@@ -252,11 +249,9 @@ export default function RegisterPage() {
                   <FormField
                     control={form.control}
                     name="confirmPassword"
-                    rules={{
-                      required: "تأیید رمز عبور الزامی است",
-                    }}
                     render={({ field }) => (
-                      <Field label="تأیید رمز عبور" required>
+                      <Field>
+                        <FieldLabel>تأیید رمز عبور *</FieldLabel>
                         <div className="relative">
                           <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -266,6 +261,9 @@ export default function RegisterPage() {
                             className="pr-9 pl-9"
                             autoComplete="new-password"
                             disabled={isLoading}
+                            data-invalid={
+                              !!form.formState.errors.confirmPassword
+                            }
                           />
                           <button
                             type="button"
@@ -282,6 +280,11 @@ export default function RegisterPage() {
                             )}
                           </button>
                         </div>
+                        {form.formState.errors.confirmPassword && (
+                          <FieldError>
+                            {form.formState.errors.confirmPassword.message?.toString()}
+                          </FieldError>
+                        )}
                       </Field>
                     )}
                   />
@@ -291,43 +294,48 @@ export default function RegisterPage() {
                 <FormField
                   control={form.control}
                   name="acceptTerms"
-                  rules={{
-                    required: "لطفاً شرایط و قوانین را بپذیرید",
-                  }}
                   render={({ field }) => (
-                    <div className="flex items-start space-x-2 space-x-reverse">
-                      <Checkbox
-                        id="acceptTerms"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isLoading}
-                      />
-                      <div className="grid gap-1.5 leading-none">
-                        <label
-                          htmlFor="acceptTerms"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          شرایط و قوانین را می‌پذیرم *
-                        </label>
-                        <p className="text-xs text-muted-foreground">
-                          با ثبت‌نام، شما{" "}
-                          <Link
-                            href="/terms"
-                            className="text-primary hover:underline"
+                    <Field>
+                      <div className="flex items-start space-x-2 space-x-reverse">
+                        <Checkbox
+                          id="acceptTerms"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={isLoading}
+                          data-invalid={!!form.formState.errors.acceptTerms}
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                          <FieldLabel
+                            htmlFor="acceptTerms"
+                            className="cursor-pointer"
                           >
-                            شرایط و قوانین
-                          </Link>{" "}
-                          و{" "}
-                          <Link
-                            href="/privacy"
-                            className="text-primary hover:underline"
-                          >
-                            حریم خصوصی
-                          </Link>{" "}
-                          ما را می‌پذیرید.
-                        </p>
+                            شرایط و قوانین را می‌پذیرم *
+                          </FieldLabel>
+                          <FieldDescription className="text-xs">
+                            با ثبت‌نام، شما{" "}
+                            <Link
+                              href="/terms"
+                              className="text-primary hover:underline"
+                            >
+                              شرایط و قوانین
+                            </Link>{" "}
+                            و{" "}
+                            <Link
+                              href="/privacy"
+                              className="text-primary hover:underline"
+                            >
+                              حریم خصوصی
+                            </Link>{" "}
+                            ما را می‌پذیرید.
+                          </FieldDescription>
+                        </div>
                       </div>
-                    </div>
+                      {form.formState.errors.acceptTerms && (
+                        <FieldError>
+                          {form.formState.errors.acceptTerms.message?.toString()}
+                        </FieldError>
+                      )}
+                    </Field>
                   )}
                 />
               </CardContent>

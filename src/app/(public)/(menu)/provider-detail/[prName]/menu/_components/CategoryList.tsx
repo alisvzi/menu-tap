@@ -1,80 +1,46 @@
 import { ItemGroup } from "@/components/ui/item";
 import FadeInItem from "@/providers/FadeInItem";
+import { Category } from "@/types/category";
 import CategoryCard from "./CategoryCard";
 
-const categories = [
-  {
-    id: 1,
-    slug: "category1",
-    nameFa: "دسته بندی اول",
-    nameEn: "Category One",
-    image: "/provider.webp",
-  },
-  {
-    id: 2,
-    slug: "category2",
-    nameFa: "دسته بندی دوم",
-    nameEn: "Category Two",
-    image: "/provider.webp",
-  },
-  {
-    id: 3,
-    slug: "category3",
-    nameFa: "دسته بندی سوم",
-    nameEn: "Category Three",
-    image: "/provider.webp",
-  },
-  {
-    id: 4,
-    slug: "category4",
-    nameFa: "دسته بندی چهارم",
-    nameEn: "Category Four",
-    image: "/provider.webp",
-  },
-  {
-    id: 5,
-    slug: "category1",
-    nameFa: "دسته بندی اول",
-    nameEn: "Category 5",
-    image: "/provider.webp",
-  },
-  {
-    id: 6,
-    slug: "category2",
-    nameFa: "دسته بندی دوم",
-    nameEn: "Category 6",
-    image: "/provider.webp",
-  },
-  {
-    id: 7,
-    slug: "category3",
-    nameFa: "دسته بندی سوم",
-    nameEn: "Category 7",
-    image: "/provider.webp",
-  },
-  {
-    id: 77,
-    slug: "category4",
-    nameFa: "دسته بندی چهارم",
-    nameEn: "Category 8",
-    image: "/provider.webp",
-  },
-];
+interface CategoryListProps {
+  categories: Category[];
+  providerSlug: string;
+}
 
-const CategoryList = () => {
+export default function CategoryList({
+  categories,
+  providerSlug,
+}: CategoryListProps) {
+  if (!categories?.length) {
+    return (
+      <div className="p-4">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">هیچ دسته‌بندی موجود نیست</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-4 pb-8">
-      <h2 className="text-xl font-semibold my-6">دسته‌بندی‌های منو</h2>
-
+    <div className="p-4">
+      <h2 className="text-lg font-semibold my-6">دسته‌بندی‌های منو</h2>
       <ItemGroup className="gap-3">
-        {categories.map((cat, i) => (
-          <FadeInItem key={cat.id} delay={i * 100}>
-            <CategoryCard cat={cat} />
+        {categories.map((category, i) => (
+          <FadeInItem key={category._id} delay={i * 100}>
+            <CategoryCard
+              category={{
+                id: category._id,
+                slug: category.slug,
+                nameFa: category.name,
+                nameEn: category.nameEn || "",
+                image: category.image || "/placeholder.svg",
+              }}
+              providerSlug={providerSlug}
+            />
           </FadeInItem>
         ))}
       </ItemGroup>
     </div>
   );
-};
-
-export default CategoryList;
+}

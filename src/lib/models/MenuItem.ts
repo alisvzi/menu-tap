@@ -1,9 +1,10 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-export interface IMenuItem extends Document {
+export interface IMenuItem {
   _id: string;
   user: mongoose.Types.ObjectId;
   category: mongoose.Types.ObjectId;
+  subcategory?: string;
   name: string;
   nameEn?: string;
   description?: string;
@@ -91,6 +92,10 @@ const MenuItemSchema = new Schema<IMenuItem>(
       ref: "Category",
       required: [true, "Category reference is required"],
     },
+    subcategory: {
+      type: String,
+      required: false,
+    },
     name: {
       type: String,
       required: [true, "Item name is required"],
@@ -125,6 +130,7 @@ const MenuItemSchema = new Schema<IMenuItem>(
     images: [
       {
         type: String,
+        trim: true,
       },
     ],
     price: {
@@ -424,13 +430,14 @@ const MenuItemSchema = new Schema<IMenuItem>(
     toJSON: {
       virtuals: true,
       transform: function (doc, ret) {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.__v;
-        return ret;
+        const r: any = ret;
+        r.id = r._id;
+        delete r._id;
+        delete r.__v;
+        return r;
       },
     },
-  },
+  }
 );
 
 // Compound indexes
@@ -455,7 +462,7 @@ MenuItemSchema.index({
 MenuItemSchema.virtual("discountPercentage").get(function () {
   if (this.originalPrice && this.originalPrice > this.price) {
     return Math.round(
-      ((this.originalPrice - this.price) / this.originalPrice) * 100,
+      ((this.originalPrice - this.price) / this.originalPrice) * 100
     );
   }
   return 0;
@@ -501,5 +508,7 @@ MenuItemSchema.pre("save", async function (next) {
   next();
 });
 
-export default mongoose.models.MenuItem ||
-  mongoose.model<IMenuItem>("MenuItem", MenuItemSchema);
+if (mongoose.models.MenuItem) {
+  delete mongoose.models.MenuItem;
+}
+export default mongoose.model<IMenuItem>("MenuItem", MenuItemSchema);

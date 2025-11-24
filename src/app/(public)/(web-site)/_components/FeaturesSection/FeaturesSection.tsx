@@ -34,10 +34,10 @@ const FeaturesSection = () => {
     <section id="features" className="py-16 px-4">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 alexandria">
+          <h2 className="text-xl md:text-4xl font-bold mb-4 alexandria">
             امکانات ویژه منوتپ
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="md:text-lg text-muted-foreground max-w-2xl mx-auto">
             با امکانات پیشرفته منوتپ، کسب‌وکار خود را به سطح جدیدی از مدیریت و
             خدمات برسانید
           </p>

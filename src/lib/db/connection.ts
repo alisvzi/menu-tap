@@ -4,7 +4,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error(
-    "❌ Please define the MONGODB_URI environment variable in .env.local",
+    "❌ Please define the MONGODB_URI environment variable in .env.local"
   );
 }
 
@@ -13,17 +13,14 @@ interface MongooseCache {
   promise: Promise<Connection> | null;
 }
 
-// ⚡ در محیط توسعه (Hot Reload)، اتصال MongoDB را در حافظه‌ی global نگه داریم
 let cached: MongooseCache = (global as any).mongoose;
 
 if (!cached) {
   cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
-// تابع اتصال اصلی
 export async function connectDB(): Promise<Connection> {
   if (cached.conn) {
-    // ✅ از اتصال کش‌شده استفاده کن
     return cached.conn;
   }
 
@@ -55,7 +52,6 @@ export async function connectDB(): Promise<Connection> {
   return cached.conn;
 }
 
-// تابع سلامت (Health Check)
 export const dbHealth = () => {
   const connection = mongoose.connection;
   return {

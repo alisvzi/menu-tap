@@ -87,18 +87,21 @@ const Footer = () => {
               <a
                 href="#"
                 className="w-10 h-10 bg-rose-gold rounded-lg flex items-center justify-center hover:bg-rose-gold-light transition-colors"
+                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5 text-background" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 bg-rose-gold rounded-lg flex items-center justify-center hover:bg-rose-gold-light transition-colors"
+                aria-label="Message"
               >
                 <MessageCircle className="w-5 h-5 text-background" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 bg-rose-gold rounded-lg flex items-center justify-center hover:bg-rose-gold-light transition-colors"
+                aria-label="Telegram"
               >
                 <Send className="w-5 h-5 text-background" />
               </a>

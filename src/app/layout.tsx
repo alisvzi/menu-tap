@@ -1,5 +1,5 @@
-import { ThemeProvider } from "@/providers/theme-provider";
 import { AuthProvider } from "@/lib/auth/context";
+import { ThemeProvider } from "@/providers/theme-provider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import NextTopLoader from "nextjs-toploader";
@@ -73,8 +73,8 @@ export default async function RootLayout({
         <AuthProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem={true}
+            defaultTheme="dark"
+            enableSystem={false}
             storageKey="theme"
           >
             {children}

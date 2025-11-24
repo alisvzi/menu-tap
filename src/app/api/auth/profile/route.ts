@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db/connection";
 import { handleApiError } from "@/lib/errors";
 import User from "@/lib/models/User";
+import Provider from "@/lib/models/Provider";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -33,6 +34,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Load provider for this user and map to legacy `business` shape
+    const provider = (await Provider.findOne({ user: user._id }).lean()) as any;
+    const business = provider
+      ? {
+          name: provider.name,
+          nameEn: provider.nameEn,
+          description: provider.description,
+          descriptionEn: provider.descriptionEn,
+          slug: provider.slug,
+          logo: provider.logo,
+          coverImage: provider.coverImage,
+          businessType: provider.providerType,
+          address: provider.address,
+          workingHours: provider.workingHours,
+          phone: provider.phone,
+          email: provider.email,
+          website: provider.website,
+          instagram: provider.instagram,
+          telegram: provider.telegram,
+          whatsapp: provider.whatsapp,
+          cuisine: provider.cuisine,
+          priceRange: provider.priceRange,
+          features: provider.features,
+          settings: provider.settings,
+          isActive: provider.isActive,
+          isCompleted: provider.isCompleted,
+        }
+      : undefined;
+
     return NextResponse.json({
       user: {
         id: user._id,
@@ -43,7 +73,7 @@ export async function GET(request: NextRequest) {
         avatar: user.avatar,
         role: user.role,
         isVerified: user.isVerified,
-        businessProfile: user.businessProfile,
+        business,
       },
     });
   } catch (error: any) {
@@ -83,12 +113,42 @@ export async function PUT(request: NextRequest) {
     if (phone !== undefined) user.phone = phone;
     if (avatar !== undefined) user.avatar = avatar;
 
-    // Update business profile if provided
+    // Upsert provider profile if provided under `business`
+    let provider: any;
     if (business) {
-      user.business = {
-        ...user.business,
-        ...business,
+      provider = await Provider.findOne({ user: user._id });
+      const providerData = {
+        name: business.name,
+        nameEn: business.nameEn,
+        description: business.description,
+        descriptionEn: business.descriptionEn,
+        slug: business.slug,
+        logo: business.logo,
+        coverImage: business.coverImage,
+        providerType: business.businessType,
+        address: business.address,
+        workingHours: business.workingHours,
+        phone: business.phone,
+        email: business.email,
+        website: business.website,
+        instagram: business.instagram,
+        telegram: business.telegram,
+        whatsapp: business.whatsapp,
+        cuisine: business.cuisine,
+        priceRange: business.priceRange,
+        features: business.features,
+        settings: business.settings,
+        isActive: business.isActive ?? true,
+        isCompleted: business.isCompleted ?? false,
       };
+
+      if (provider) {
+        Object.assign(provider, providerData);
+        await provider.save();
+      } else {
+        provider = new Provider({ user: user._id, ...providerData });
+        await provider.save();
+      }
     }
 
     await user.save();
@@ -104,7 +164,32 @@ export async function PUT(request: NextRequest) {
         avatar: user.avatar,
         role: user.role,
         isVerified: user.isVerified,
-        business: user.business,
+        business: provider
+          ? {
+              name: provider.name,
+              nameEn: provider.nameEn,
+              description: provider.description,
+              descriptionEn: provider.descriptionEn,
+              slug: provider.slug,
+              logo: provider.logo,
+              coverImage: provider.coverImage,
+              businessType: provider.providerType,
+              address: provider.address,
+              workingHours: provider.workingHours,
+              phone: provider.phone,
+              email: provider.email,
+              website: provider.website,
+              instagram: provider.instagram,
+              telegram: provider.telegram,
+              whatsapp: provider.whatsapp,
+              cuisine: provider.cuisine,
+              priceRange: provider.priceRange,
+              features: provider.features,
+              settings: provider.settings,
+              isActive: provider.isActive,
+              isCompleted: provider.isCompleted,
+            }
+          : undefined,
       },
     });
   } catch (error: any) {
@@ -129,14 +214,54 @@ export async function PATCH(request: NextRequest) {
     const decoded = await verifyToken(request);
     const body = await request.json();
 
+    const { business, ...userUpdates } = body || {};
+
     const updatedUser = await User.findByIdAndUpdate(
       decoded.userId,
-      { $set: body },
+      { $set: userUpdates },
       { new: true, runValidators: true }
     ).select("-password");
 
     if (!updatedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Optionally update provider
+    let provider;
+    if (business) {
+      provider = await Provider.findOne({ user: updatedUser._id });
+      const providerData = {
+        name: business.name,
+        nameEn: business.nameEn,
+        description: business.description,
+        descriptionEn: business.descriptionEn,
+        slug: business.slug,
+        logo: business.logo,
+        coverImage: business.coverImage,
+        providerType: business.businessType,
+        address: business.address,
+        workingHours: business.workingHours,
+        phone: business.phone,
+        email: business.email,
+        website: business.website,
+        instagram: business.instagram,
+        telegram: business.telegram,
+        whatsapp: business.whatsapp,
+        cuisine: business.cuisine,
+        priceRange: business.priceRange,
+        features: business.features,
+        settings: business.settings,
+        isActive: business.isActive ?? true,
+        isCompleted: business.isCompleted ?? false,
+      };
+
+      if (provider) {
+        Object.assign(provider, providerData);
+        await provider.save();
+      } else {
+        provider = new Provider({ user: updatedUser._id, ...providerData });
+        await provider.save();
+      }
     }
 
     return NextResponse.json({
@@ -150,7 +275,32 @@ export async function PATCH(request: NextRequest) {
         avatar: updatedUser.avatar,
         role: updatedUser.role,
         isVerified: updatedUser.isVerified,
-        business: updatedUser.business,
+        business: provider
+          ? {
+              name: provider.name,
+              nameEn: provider.nameEn,
+              description: provider.description,
+              descriptionEn: provider.descriptionEn,
+              slug: provider.slug,
+              logo: provider.logo,
+              coverImage: provider.coverImage,
+              businessType: provider.providerType,
+              address: provider.address,
+              workingHours: provider.workingHours,
+              phone: provider.phone,
+              email: provider.email,
+              website: provider.website,
+              instagram: provider.instagram,
+              telegram: provider.telegram,
+              whatsapp: provider.whatsapp,
+              cuisine: provider.cuisine,
+              priceRange: provider.priceRange,
+              features: provider.features,
+              settings: provider.settings,
+              isActive: provider.isActive,
+              isCompleted: provider.isCompleted,
+            }
+          : undefined,
       },
     });
   } catch (error: any) {

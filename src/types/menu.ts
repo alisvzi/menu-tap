@@ -38,6 +38,17 @@ export interface ItemAnalytics {
   reviewCount: number;
 }
 
+export interface Subcategory {
+  _id: string;
+  name_fa: string;
+  name_en?: string;
+}
+
+export interface SubcategoryInput {
+  name_fa: string;
+  name_en?: string;
+}
+
 export interface Category {
   _id: string;
   business: string;
@@ -51,6 +62,7 @@ export interface Category {
   order: number;
   isActive: boolean;
   isVisible: boolean;
+  subcategories?: Subcategory[];
   availableFrom?: string; // HH:MM format
   availableUntil?: string; // HH:MM format
   availableDays?: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday')[];
@@ -68,6 +80,7 @@ export interface MenuItem {
   _id: string;
   business: string;
   category: string | Category;
+  subcategory?: string;
   name: string;
   nameEn?: string;
   description?: string;
@@ -93,6 +106,8 @@ export interface MenuItem {
   isFeatured?: boolean;
   isPopular?: boolean;
   isNew?: boolean;
+  isSpicy?: boolean;
+  isVisible?: boolean;
   variants?: ItemVariant[];
   addons?: ItemAddon[];
   order: number;
@@ -132,6 +147,7 @@ export interface CreateCategoryData {
   availableFrom?: string;
   availableUntil?: string;
   availableDays?: string[];
+  subcategories?: SubcategoryInput[];
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -142,8 +158,9 @@ export interface CreateCategoryData {
 export interface UpdateCategoryData extends Partial<CreateCategoryData> {}
 
 export interface CreateMenuItemData {
-  business: string;
+  business?: string;
   category: string;
+  subcategory?: string;
   name: string;
   nameEn?: string;
   description?: string;

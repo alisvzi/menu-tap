@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -16,30 +16,29 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth/context";
 import {
-  Home,
-  Store,
-  Menu,
-  Settings,
   BarChart3,
-  Users,
   Bell,
-  HelpCircle,
-  LogOut,
-  Plus,
+  Building2,
+  ChevronDown,
+  CreditCard,
   Edit,
   Eye,
-  TrendingUp,
-  Calendar,
-  CreditCard,
-  Palette,
   Globe,
-  ChevronDown,
-  Building2,
+  HelpCircle,
+  Home,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Palette,
+  Plus,
+  Settings,
+  Store,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Business {
   _id: string;
@@ -50,6 +49,7 @@ interface Business {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [expandedSections, setExpandedSections] = useState<string[]>(["main"]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +61,7 @@ export function AppSidebar() {
   const fetchBusinesses = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/businesses?owner=me&limit=10");
+      const response = await fetch("/api/providers?owner=me&limit=10");
       if (response.ok) {
         const data = await response.json();
         setBusinesses(data.businesses || []);
@@ -77,7 +77,7 @@ export function AppSidebar() {
     setExpandedSections((prev) =>
       prev.includes(section)
         ? prev.filter((s) => s !== section)
-        : [...prev, section],
+        : [...prev, section]
     );
   };
 
@@ -163,6 +163,17 @@ export function AppSidebar() {
           title: "نمایش منو",
           url: "/customer-panel/preview",
           icon: Globe,
+        },
+      ],
+    },
+    {
+      title: "بازخورد و نظرات",
+      icon: MessageSquare,
+      items: [
+        {
+          title: "نظرات مشتریان",
+          url: "/customer-panel/reviews",
+          icon: MessageSquare,
         },
       ],
     },
@@ -312,53 +323,49 @@ export function AppSidebar() {
         )}
 
         {/* Business Management */}
-        {businesses.length > 0 && (
-          <>
-            <Separator className="my-4" />
-            <SidebarGroup>
-              <SidebarGroupLabel>مدیریت کسب‌وکار</SidebarGroupLabel>
-              <SidebarMenu>
-                {businessMenuItems.map((section) => (
-                  <SidebarMenuItem key={section.title}>
-                    <SidebarMenuButton
-                      onClick={() => toggleSection(section.title)}
-                      className="justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <section.icon className="ml-2 size-4" />
-                        {section.title}
-                      </div>
-                      <ChevronDown
-                        className={`size-4 transition-transform ${
-                          expandedSections.includes(section.title)
-                            ? "rotate-180"
-                            : ""
-                        }`}
-                      />
-                    </SidebarMenuButton>
-                    {expandedSections.includes(section.title) && (
-                      <SidebarMenuSub>
-                        {section.items.map((item) => (
-                          <SidebarMenuSubItem key={item.url}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={isActive(item.url)}
-                            >
-                              <Link href={item.url}>
-                                <item.icon className="ml-2 size-4" />
-                                {item.title}
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
-          </>
-        )}
+        <Separator className="my-4" />
+        <SidebarGroup>
+          <SidebarGroupLabel>مدیریت کسب‌وکار</SidebarGroupLabel>
+          <SidebarMenu>
+            {businessMenuItems.map((section) => (
+              <SidebarMenuItem key={section.title}>
+                <SidebarMenuButton
+                  onClick={() => toggleSection(section.title)}
+                  className="justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <section.icon className="ml-2 size-4" />
+                    {section.title}
+                  </div>
+                  <ChevronDown
+                    className={`size-4 transition-transform ${
+                      expandedSections.includes(section.title)
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </SidebarMenuButton>
+                {expandedSections.includes(section.title) && (
+                  <SidebarMenuSub>
+                    {section.items.map((item) => (
+                      <SidebarMenuSubItem key={item.url}>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={isActive(item.url)}
+                        >
+                          <Link href={item.url}>
+                            <item.icon className="ml-2 size-4" />
+                            {item.title}
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
 
         <Separator className="my-4" />
 
@@ -390,7 +397,11 @@ export function AppSidebar() {
             asChild
             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
           >
-            <button className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2"
+              onClick={logout}
+            >
               <LogOut className="size-4" />
               خروج از حساب
             </button>

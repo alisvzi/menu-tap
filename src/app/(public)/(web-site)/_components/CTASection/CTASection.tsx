@@ -5,10 +5,10 @@ const CTASection = () => {
   return (
     <section className="py-16 px-4 bg-gradient-to-r from-rose-gold/10 to-rose-gold/5">
       <div className="container text-center">
-        <h2 className="text-4xl font-bold mb-4 alexandria">
+        <h2 className="text-xl md:text-4xl font-bold mb-4 alexandria">
           آماده شروع هستید؟
         </h2>
-        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+        <p className="md:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
           همین امروز کسب‌وکار خود را با منوی دیجیتال هوشمند منوتپ متحول کنید
         </p>
         <Button className="premium-button text-lg px-8 py-4 shadow-xl">

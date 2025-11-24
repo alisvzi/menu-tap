@@ -36,9 +36,6 @@ export async function POST(request: NextRequest) {
       lastName,
       phone,
       role: "customer",
-      business: {
-        isCompleted: false,
-      },
     });
 
     await user.save();
@@ -54,7 +51,6 @@ export async function POST(request: NextRequest) {
       { expiresIn: "7d" }
     );
 
-    // Create response
     const response = NextResponse.json(
       {
         message: "User registered successfully",
@@ -66,7 +62,6 @@ export async function POST(request: NextRequest) {
           phone: user.phone,
           role: user.role,
           isVerified: user.isVerified,
-          business: user.business,
         },
         token,
       },

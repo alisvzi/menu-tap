@@ -1,10 +1,16 @@
 import { CarouselItem } from "@/components/ui/carousel";
 
-const CategorySelectCart = ({ category, handleSelect, isActive }) => {
+interface CategorySelectCartProps {
+  category: { slug: string; name: string; nameEn?: string };
+  handleSelect: (slug: string) => void;
+  isActive: boolean;
+}
+
+const CategorySelectCart = ({ category, handleSelect, isActive }: CategorySelectCartProps) => {
   return (
-    <CarouselItem key={category.titleEn} className="basis-1/2 min-w-[80px]">
+    <CarouselItem key={category.slug} className="basis-1/2 min-w-[80px]">
       <button
-        onClick={() => handleSelect(category.titleEn)}
+        onClick={() => handleSelect(category.slug)}
         className={`w-full h-[60px] flex flex-col items-center justify-center rounded-xl border transition-all duration-300 ${
           isActive
             ? "text-accent-foreground border-primary bg-rose-gold-muted/40 dark:bg-accent shadow-sm"
@@ -12,10 +18,10 @@ const CategorySelectCart = ({ category, handleSelect, isActive }) => {
         }`}
       >
         <span className="text-sm font-medium truncate px-2">
-          {category.title}
+          {category.name}
         </span>
         <span className="text-sm font-medium truncate px-2">
-          {category.titleEn}
+          {category.nameEn}
         </span>
       </button>
     </CarouselItem>

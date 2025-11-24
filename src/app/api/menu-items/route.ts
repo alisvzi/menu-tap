@@ -3,6 +3,7 @@ import { handleApiError } from "@/lib/errors";
 import Category from "@/lib/models/Category";
 import MenuItem from "@/lib/models/MenuItem";
 import User from "@/lib/models/User";
+import Provider from "@/lib/models/Provider";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -30,6 +31,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
+    const providerId = searchParams.get("providerId");
     const categoryId = searchParams.get("categoryId");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -45,18 +47,20 @@ export async function GET(request: NextRequest) {
     // Build query
     const query: any = {};
 
-    if (userId) {
+    if (providerId) {
+      const cats = await Category.find({ provider: providerId }).select("_id");
+      query.category = { $in: cats.map((c: any) => c._id) };
+    } else if (userId) {
       query.user = userId;
     } else if (categoryId) {
       query.category = categoryId;
     } else {
-      // If no userId or categoryId provided, try to get from token
       try {
         const decoded = await verifyToken(request);
         query.user = decoded.userId;
       } catch (error) {
         return NextResponse.json(
-          { error: "User ID, Category ID required or valid token needed" },
+          { error: "Provider ID, User ID or valid token required" },
           { status: 400 }
         );
       }
@@ -143,9 +147,11 @@ export async function POST(request: NextRequest) {
     // Verify authentication
     const decoded = await verifyToken(request);
 
-    const body = await request.json();
-    const {
+  const body = await request.json();
+  const {
+      business,
       category,
+      subcategory,
       name,
       nameEn,
       description,
@@ -186,22 +192,43 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validation
-    if (!category || !name || price === undefined) {
+    if (!business || !category || !name || price === undefined) {
       return NextResponse.json(
-        { error: "Category ID, name, and price are required" },
+        { error: "Business ID, Category ID, name, and price are required" },
         { status: 400 }
       );
     }
 
-    // Verify user exists and has completed business profile
+    // Verify user exists and has completed provider profile
     const user = await User.findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.business?.isCompleted) {
+    const provider = await Provider.findById(business).select("user isCompleted");
+    if (!provider) {
       return NextResponse.json(
-        { error: "Please complete your business profile first" },
+        { error: "Provider not found" },
+        { status: 404 }
+      );
+    }
+
+    if (String(provider.user) !== String(decoded.userId)) {
+      return NextResponse.json(
+        { error: "You do not own this provider" },
+        { status: 403 }
+      );
+    }
+
+    const [hasBusiness, hasCategory, hasMenuItem] = await Promise.all([
+      Provider.exists({ user: decoded.userId }),
+      Category.exists({ user: decoded.userId }),
+      MenuItem.exists({ user: decoded.userId }),
+    ]);
+
+    if (!hasBusiness && !hasCategory && !hasMenuItem) {
+      return NextResponse.json(
+        { error: "Please complete your provider profile first" },
         { status: 400 }
       );
     }
@@ -220,6 +247,26 @@ export async function POST(request: NextRequest) {
         { error: "Category does not belong to you" },
         { status: 403 }
       );
+    }
+
+    if (String(categoryDoc.provider) !== String(business)) {
+      return NextResponse.json(
+        { error: "Category does not belong to selected provider" },
+        { status: 400 }
+      );
+    }
+
+    // Validate subcategory belongs to category if provided
+    if (subcategory) {
+      const exists = (categoryDoc as any).subcategories?.some(
+        (sc: any) => sc && sc._id && sc._id.toString() === String(subcategory),
+      );
+      if (!exists) {
+        return NextResponse.json(
+          { error: "Subcategory not found in the selected category" },
+          { status: 400 },
+        );
+      }
     }
 
     // Check if slug is unique within the user's menu items
@@ -270,6 +317,7 @@ export async function POST(request: NextRequest) {
     const menuItem = new MenuItem({
       user: decoded.userId,
       category,
+      subcategory,
       name,
       nameEn,
       description,

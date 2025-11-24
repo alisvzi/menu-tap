@@ -53,8 +53,10 @@ const PricingSection = () => {
     <section id="pricing" className="py-16 px-4 bg-muted/20">
       <div className="container ">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 alexandria">تعرفه‌ها</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-xl md:text-4xl font-bold mb-4 alexandria">
+            تعرفه‌ها
+          </h2>
+          <p className="md:text-lg text-muted-foreground max-w-2xl mx-auto">
             انتخاب بهترین پلن برای کسب‌وکار شما
           </p>
         </div>

@@ -29,8 +29,10 @@ const Testimonials = () => {
     <section id="testimonials" className="py-16 px-4">
       <div className="container ">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 alexandria">نظرات مشتریان</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-xl md:text-4xl font-bold mb-4 alexandria">
+            نظرات مشتریان
+          </h2>
+          <p className="md:text-lg text-muted-foreground max-w-2xl mx-auto">
             کسب‌وکارهای مختلف از منوتپ راضی هستند
           </p>
         </div>
@@ -51,7 +53,7 @@ const Testimonials = () => {
                   ))}
                 </div>
                 <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                  "{testimonial.content}"
+                  {testimonial.content}
                 </p>
                 <div>
                   <h4 className="font-semibold">{testimonial.name}</h4>

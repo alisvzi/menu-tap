@@ -1,30 +1,46 @@
 "use client";
 
+import { Form, FormField } from "@/components/forms/field";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth/context";
+import { ErrorHandler } from "@/lib/errors";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth/context";
-import { LoginCredentials } from "@/types/auth";
-import { ErrorHandler } from "@/lib/errors";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormField, Field } from "@/components/forms/field";
-import { Eye, EyeOff, Mail, Lock, LogIn, AlertCircle } from "lucide-react";
+import { z } from "zod";
+import { loginSchema } from "./_types/login-schema";
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const form = useForm<LoginCredentials>({
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: LoginCredentials) => {
+  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
       setError("");
       await login(data);
@@ -36,12 +52,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-xl">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <LogIn className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">ورود به بست منو</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            ورود به بست منو
+          </h1>
           <p className="text-muted-foreground mt-2">
             به پنل مدیریت منوی دیجیتال خود وارد شوید
           </p>
@@ -70,22 +88,13 @@ export default function LoginPage() {
                 <FormField
                   control={form.control}
                   name="email"
-                  rules={{
-                    required: "ایمیل الزامی است",
-                    pattern: {
-                      value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                      message: "فرمت ایمیل صحیح نیست",
-                    },
-                  }}
-                  render={({ field }) => (
-                    <Field
-                      label="ایمیل"
-                      required
-                      description="ایمیل ثبت‌نامی خود را وارد کنید"
-                    >
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="email">ایمیل</FieldLabel>
                       <div className="relative">
                         <Mail className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
+                          id="email"
                           {...field}
                           type="email"
                           placeholder="example@domain.com"
@@ -94,6 +103,12 @@ export default function LoginPage() {
                           disabled={isLoading}
                         />
                       </div>
+                      <FieldDescription>
+                        ایمیل ثبت‌نامی خود را وارد کنید
+                      </FieldDescription>
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -101,22 +116,13 @@ export default function LoginPage() {
                 <FormField
                   control={form.control}
                   name="password"
-                  rules={{
-                    required: "رمز عبور الزامی است",
-                    minLength: {
-                      value: 6,
-                      message: "رمز عبور باید حداقل ۶ کاراکتر باشد",
-                    },
-                  }}
-                  render={({ field }) => (
-                    <Field
-                      label="رمز عبور"
-                      required
-                      description="رمز عبور حساب کاربری خود را وارد کنید"
-                    >
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="password">رمز عبور</FieldLabel>
                       <div className="relative">
                         <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
+                          id="password"
                           {...field}
                           type={showPassword ? "text" : "password"}
                           placeholder="رمز عبور خود را وارد کنید"
@@ -137,6 +143,12 @@ export default function LoginPage() {
                           )}
                         </button>
                       </div>
+                      <FieldDescription>
+                        رمز عبور حساب کاربری خود را وارد کنید
+                      </FieldDescription>
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />

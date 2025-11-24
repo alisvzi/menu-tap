@@ -3,32 +3,27 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useTheme } from "next-themes";
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import LogoBox from "../Footer/LogoBox";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [isMounted, setIsMounted] = useState(false);
-  const { theme } = useTheme();
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const logoSrc = theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg";
   return (
     <header className="fixed top-0 w-full z-50 nav-blur">
-      <div className="container  px-4 py-3">
+      <div className="container px-4 py-3">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-x-3 ">
-            {isMounted ? (
-              <Image src={logoSrc} alt="Site Logo" width={150} height={26} />
-            ) : (
-              <div className="text-lg w-[150px] h-[26px]"></div>
-            )}
+            <div suppressHydrationWarning>
+              {/* {isMounted ? (
+                <Image src={logoSrc} alt="Site Logo" width={150} height={26} />
+              ) : (
+                <div className="text-lg w-[150px] h-[26px]"></div>
+              )} */}
+
+              <LogoBox />
+            </div>
             <div className="hidden md:block">
               <h1 className="text-lg font-bold rose-gold-gradient alexandria">
                 منوتپ

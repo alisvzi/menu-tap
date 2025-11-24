@@ -3,10 +3,10 @@ const HowItWorkSection = () => {
     <section className="py-16 px-4">
       <div className="container ">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 alexandria">
+          <h2 className="text-xl md:text-4xl font-bold mb-4 alexandria">
             چگونه کار می‌کند؟
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="md:text-lg text-muted-foreground max-w-2xl mx-auto">
             در سه مرحله ساده منوی دیجیتال خود را راه‌اندازی کنید
           </p>
         </div>

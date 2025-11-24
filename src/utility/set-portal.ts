@@ -10,14 +10,13 @@ export default function SetPortal({
   children: React.ReactNode;
   idName: string;
 }) {
-  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  const [node, setNode] = useState<Element | null>(null);
 
   useEffect(() => {
-    const node = document.getElementById(idName);
-    setPortalNode(node);
-  }, []);
+    setNode(document.getElementById(idName));
+  }, [idName]);
 
-  if (!portalNode) return null;
+  if (!node) return null;
 
-  return createPortal(children, portalNode);
+  return createPortal(children, node);
 }

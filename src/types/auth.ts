@@ -1,3 +1,4 @@
+
 // Authentication related types
 export interface User {
   _id: string;
@@ -16,7 +17,7 @@ export interface User {
     slug: string;
     logo?: string;
     coverImage?: string;
-    businessType: string;
+    providerType: string;
     address: {
       street: string;
       city: string;
@@ -28,7 +29,7 @@ export interface User {
       };
     };
     workingHours: {
-      day: string;
+      day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
       isOpen: boolean;
       openTime?: string;
       closeTime?: string;
@@ -67,52 +68,7 @@ export interface AuthUser {
   avatar?: string;
   role: "customer" | "admin";
   isVerified: boolean;
-  business?: {
-    name: string;
-    nameEn?: string;
-    description?: string;
-    descriptionEn?: string;
-    slug: string;
-    logo?: string;
-    coverImage?: string;
-    businessType: string;
-    address: {
-      street: string;
-      city: string;
-      state: string;
-      postalCode?: string;
-      coordinates?: {
-        lat: number;
-        lng: number;
-      };
-    };
-    workingHours: {
-      day: string;
-      isOpen: boolean;
-      openTime?: string;
-      closeTime?: string;
-    }[];
-    phone: string;
-    email?: string;
-    website?: string;
-    instagram?: string;
-    telegram?: string;
-    whatsapp?: string;
-    cuisine: string[];
-    priceRange: "budget" | "moderate" | "expensive" | "fine-dining";
-    features: string[];
-    settings: {
-      allowOnlineOrdering: boolean;
-      showPrices: boolean;
-      showCalories: boolean;
-      showIngredients: boolean;
-      theme: string;
-      primaryColor?: string;
-      secondaryColor?: string;
-    };
-    isActive: boolean;
-    isCompleted: boolean;
-  };
+  business?: User["business"];
 }
 
 export interface LoginCredentials {
@@ -171,15 +127,17 @@ export interface BusinessProfileData {
   description?: string;
   descriptionEn?: string;
   slug: string;
-  businessType: string;
+  providerType: string;
+  logo?: string;
+  coverImage?: string;
   address: {
     street: string;
     city: string;
     state: string;
     postalCode?: string;
   };
-  workingHours: {
-    day: string;
+  workingHours?: {
+    day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
     isOpen: boolean;
     openTime?: string;
     closeTime?: string;
@@ -190,7 +148,14 @@ export interface BusinessProfileData {
   instagram?: string;
   telegram?: string;
   whatsapp?: string;
-  cuisine: string[];
-  priceRange: "budget" | "moderate" | "expensive" | "fine-dining";
-  features: string[];
+  cuisine?: string[];
+  priceRange?: "budget" | "moderate" | "expensive" | "fine-dining";
+  features?: string[];
+  branches?: {
+    title: string;
+    address: string;
+    coordinates?: { lat: number; lng: number };
+  }[];
+  isActive?: boolean;
+  isVerified?: boolean;
 }

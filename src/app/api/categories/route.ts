@@ -1,7 +1,9 @@
 import { connectDB } from "@/lib/db/connection";
 import { handleApiError } from "@/lib/errors";
 import Category from "@/lib/models/Category";
+import MenuItem from "@/lib/models/MenuItem";
 import User from "@/lib/models/User";
+import Provider from "@/lib/models/Provider";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -29,6 +31,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
+    const businessId = searchParams.get("businessId");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const search = searchParams.get("search");
@@ -38,16 +41,17 @@ export async function GET(request: NextRequest) {
     // Build query
     const query: any = {};
 
-    if (userId) {
+    if (businessId) {
+      query.provider = businessId;
+    } else if (userId) {
       query.user = userId;
     } else {
-      // If no userId provided, try to get from token
       try {
         const decoded = await verifyToken(request);
         query.user = decoded.userId;
       } catch (error) {
         return NextResponse.json(
-          { error: "User ID required or valid token needed" },
+          { error: "Business ID, User ID or valid token required" },
           { status: 400 }
         );
       }
@@ -120,7 +124,9 @@ export async function POST(request: NextRequest) {
       availableFrom,
       availableUntil,
       availableDays,
+      subcategories,
       seo,
+      business,
     } = body;
 
     // Validation
@@ -131,15 +137,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user exists and has completed business profile
+    // Verify user exists and has completed provider profile
     const user = await User.findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.business?.isCompleted) {
+    if (!business) {
       return NextResponse.json(
-        { error: "Please complete your business profile first" },
+        { error: "Business (provider) ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const provider = await Provider.findById(business).select("user isCompleted");
+    if (!provider) {
+      return NextResponse.json(
+        { error: "Provider not found" },
+        { status: 404 }
+      );
+    }
+
+    if (String(provider.user) !== String(decoded.userId)) {
+      return NextResponse.json(
+        { error: "You do not own this provider" },
+        { status: 403 }
+      );
+    }
+
+    const [hasBusiness, hasCategory, hasMenuItem] = await Promise.all([
+      Provider.exists({ user: decoded.userId }),
+      Category.exists({ user: decoded.userId }),
+      MenuItem.exists({ user: decoded.userId }),
+    ]);
+
+    if (!hasBusiness && !hasCategory && !hasMenuItem) {
+      return NextResponse.json(
+        { error: "Please complete your provider profile first" },
         { status: 400 }
       );
     }
@@ -189,8 +223,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Create category
+    // Prepare subcategories if provided
+    let preparedSubcategories: any[] = [];
+    if (Array.isArray(subcategories)) {
+      preparedSubcategories = subcategories
+        .filter(
+          (s: any) =>
+            s && typeof s.name_fa === "string" && s.name_fa.trim().length > 0
+        )
+        .map((s: any) => ({
+          name_fa: s.name_fa.trim(),
+          name_en: typeof s.name_en === "string" ? s.name_en.trim() : "",
+        }));
+    }
     const category = new Category({
       user: decoded.userId,
+      provider: provider._id,
       name,
       nameEn,
       description,
@@ -204,6 +252,7 @@ export async function POST(request: NextRequest) {
       availableFrom,
       availableUntil,
       availableDays,
+      subcategories: preparedSubcategories,
       seo: seo || {},
     });
 

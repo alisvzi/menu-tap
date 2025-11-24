@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface ICategory extends Document {
   _id: string;
   user: mongoose.Types.ObjectId;
+  provider: mongoose.Types.ObjectId;
   name: string;
   nameEn?: string;
   description?: string;
@@ -13,6 +14,11 @@ export interface ICategory extends Document {
   order: number;
   isActive: boolean;
   isVisible: boolean;
+  subcategories?: {
+    _id?: mongoose.Types.ObjectId;
+    name_fa: string;
+    name_en?: string;
+  }[];
   availableFrom?: string;
   availableUntil?: string;
   availableDays?: string[];
@@ -31,6 +37,11 @@ const CategorySchema = new Schema<ICategory>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "User reference is required"],
+    },
+    provider: {
+      type: Schema.Types.ObjectId,
+      ref: "Provider",
+      required: [true, "Provider reference is required"],
     },
     name: {
       type: String,
@@ -84,6 +95,27 @@ const CategorySchema = new Schema<ICategory>(
       type: Boolean,
       default: true,
     },
+    subcategories: [
+      {
+        name_fa: {
+          type: String,
+          required: [true, "Subcategory Persian name is required"],
+          trim: true,
+          maxlength: [
+            100,
+            "Subcategory Persian name cannot exceed 100 characters",
+          ],
+        },
+        name_en: {
+          type: String,
+          trim: true,
+          maxlength: [
+            100,
+            "Subcategory English name cannot exceed 100 characters",
+          ],
+        },
+      },
+    ],
     availableFrom: {
       type: String,
       match: [
@@ -136,13 +168,14 @@ const CategorySchema = new Schema<ICategory>(
     toJSON: {
       virtuals: true,
       transform: function (doc, ret) {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.__v;
-        return ret;
+        const r: any = ret;
+        r.id = r._id;
+        delete r._id;
+        delete r.__v;
+        return r;
       },
     },
-  },
+  }
 );
 
 // Compound index to ensure unique slug per user

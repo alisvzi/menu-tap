@@ -1,7 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/forms/field";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,11 +17,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,31 +29,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowRight,
-  Store,
-  Settings,
-  Menu,
   BarChart3,
-  Users,
-  MapPin,
-  Phone,
-  Mail,
+  Clock,
+  Edit,
+  Eye,
   Globe,
   Instagram,
-  MessageCircle,
-  Clock,
+  MapPin,
+  Menu,
+  Phone,
   Plus,
-  Edit,
-  Trash2,
-  Eye,
+  Settings,
   Star,
+  Store,
   TrendingUp,
-  Calendar,
-  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  businessProfileSchema,
+  businessSettingsSchema,
+  workingHoursSchema,
+  type BusinessProfileFormData,
+} from "../_types/business-schema";
+import { Provider } from "@/types/business";
+import { BusinessInfoForm } from "./_components/business-info-form";
+import { WorkingHoursForm } from "./_components/working-hours-form";
+import { SettingsForm } from "./_components/settings-form";
 
 interface Business {
   _id: string;
@@ -135,13 +152,21 @@ const DAYS = [
   { key: "sunday", label: "یکشنبه" },
 ];
 
+const PROVIDER_TYPES = [
+  { value: "restaurant", label: "رستوران" },
+  { value: "cafe", label: "کافه" },
+  { value: "confectionery", label: "شیرینی فروشی" },
+  { value: "other", label: "غیره" },
+];
+
 export default function BusinessManagementPage() {
-  const params = useParams();
+  const params = useParams() as { providerId?: string };
+  const providerId = params?.providerId as string;
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [business, setBusiness] = useState<Business | null>(null);
+  const [business, setBusiness] = useState<Provider | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [stats, setStats] = useState({
@@ -151,39 +176,111 @@ export default function BusinessManagementPage() {
     totalOrders: 0,
   });
 
+  // فرم اطلاعات کسب‌وکار
+  const businessInfoForm = useForm<BusinessProfileFormData>({
+    resolver: zodResolver(businessProfileSchema),
+    defaultValues: {
+      name: "",
+      nameEn: "",
+      description: "",
+      phone: "",
+      email: "",
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        postalCode: "",
+      },
+      website: "",
+      instagram: "",
+      telegram: "",
+      whatsapp: "",
+    },
+  });
+
+  // فرم ساعت‌های کاری
+  const workingHoursForm = useForm<z.infer<typeof workingHoursSchema>>({
+    resolver: zodResolver(workingHoursSchema),
+    defaultValues: {
+      workingHours: [],
+    },
+  });
+
+  // فرم تنظیمات
+  const settingsForm = useForm({
+    resolver: zodResolver(businessSettingsSchema),
+    defaultValues: {
+      showPrices: true,
+      showCalories: false,
+      showIngredients: false,
+      allowOnlineOrdering: true,
+    },
+  });
+
   useEffect(() => {
-    if (params.id) {
+    if (providerId) {
       fetchBusinessData();
     }
-  }, [params.id]);
+  }, [providerId]);
 
   const fetchBusinessData = async () => {
     try {
       setLoading(true);
 
       // Fetch business details
-      const businessResponse = await fetch(`/api/businesses/${params.id}`);
+      const businessResponse = await fetch(`/api/providers/${providerId}`);
       if (businessResponse.ok) {
         const businessData = await businessResponse.json();
-        setBusiness(businessData.business);
+        setBusiness(businessData.data);
+
+        // پر کردن فرم اطلاعات کسب‌وکار با داده‌های دریافتی
+        businessInfoForm.reset({
+          name: businessData.data.name,
+          nameEn: businessData.data.nameEn || "",
+          description: businessData.data.description || "",
+          phone: businessData.data.phone,
+          email: businessData.data.email || "",
+          address: {
+            street: businessData.data.address.street,
+            city: businessData.data.address.city,
+            state: businessData.data.address.state,
+            postalCode: businessData.data.address.postalCode || "",
+          },
+          website: businessData.data.website || "",
+          instagram: businessData.data.instagram || "",
+          telegram: businessData.data.telegram || "",
+          whatsapp: businessData.data.whatsapp || "",
+          isActive: businessData.data.isActive,
+          isVerified: businessData.data.isVerified,
+          branches: businessData.data.branches || [],
+        });
+
+        // پر کردن فرم تنظیمات
+        settingsForm.reset({
+          showPrices: businessData.data.settings.showPrices,
+          showCalories: businessData.data.settings.showCalories,
+          showIngredients: businessData.data.settings.showIngredients,
+          allowOnlineOrdering:
+            businessData.data.settings.allowOnlineOrdering,
+        });
       }
 
-      // Fetch categories
+      // Fetch categories via business slug
       const categoriesResponse = await fetch(
-        `/api/categories?businessId=${params.id}`,
+        `/api/providers/${providerId}/categories`
       );
       if (categoriesResponse.ok) {
         const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.categories || []);
+        setCategories(categoriesData.data?.categories || []);
         setStats((prev) => ({
           ...prev,
-          totalCategories: categoriesData.categories?.length || 0,
+          totalCategories: categoriesData.data?.categories?.length || 0,
         }));
       }
 
       // Fetch menu items
       const menuItemsResponse = await fetch(
-        `/api/menu-items?businessId=${params.id}&limit=10`,
+        `/api/menu-items?providerId=${business?._id}&limit=10`
       );
       if (menuItemsResponse.ok) {
         const menuItemsData = await menuItemsResponse.json();
@@ -200,10 +297,10 @@ export default function BusinessManagementPage() {
     }
   };
 
-  const handleBusinessUpdate = async (updatedData: Partial<Business>) => {
+  const handleBusinessUpdate = async (updatedData: Partial<Provider>) => {
     try {
       setSaving(true);
-      const response = await fetch(`/api/businesses/${params.id}`, {
+      const response = await fetch(`/api/providers/${providerId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -213,7 +310,7 @@ export default function BusinessManagementPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setBusiness(data.business);
+        setBusiness(data.data);
         alert("اطلاعات با موفقیت بروزرسانی شد");
       } else {
         const errorData = await response.json();
@@ -225,6 +322,46 @@ export default function BusinessManagementPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onSubmitBusinessInfo = async (data: BusinessProfileFormData) => {
+    const update: Partial<Provider> = {
+      name: data.name,
+      nameEn: data.nameEn,
+      description: data.description,
+      descriptionEn: data.descriptionEn,
+      slug: data.slug,
+      providerType: data.providerType,
+      logo: data.logo,
+      coverImage: data.coverImage,
+      address: data.address,
+      workingHours: data.workingHours,
+      phone: data.phone,
+      email: data.email || undefined,
+      website: data.website || undefined,
+      instagram: data.instagram,
+      telegram: data.telegram,
+      whatsapp: data.whatsapp,
+      cuisine: data.cuisine || [],
+      priceRange: data.priceRange as Provider['priceRange'],
+      features: data.features || [],
+      isActive: data.isActive ?? false,
+      isVerified: data.isVerified ?? false,
+      branches: data.branches?.map((b) => ({
+        name: b.title,
+        address: b.address,
+        coordinates: b.coordinates,
+      })),
+    };
+    await handleBusinessUpdate(update);
+  };
+
+  const onSubmitSettings = async (data: any) => {
+    await handleBusinessUpdate({ settings: data });
+  };
+
+  const onSubmitWorkingHours = async (data: { workingHours: any[] }) => {
+    await handleBusinessUpdate({ workingHours: data.workingHours });
   };
 
   const renderOverviewTab = () => (
@@ -290,7 +427,7 @@ export default function BusinessManagementPage() {
               className="justify-start h-auto p-4"
             >
               <Link
-                href={`/customer-panel/menu-items/new?businessId=${params.id}`}
+                href={`/customer-panel/menu-items/new?businessId=${providerId}`}
               >
                 <div className="text-right">
                   <Plus className="w-5 h-5 mb-2" />
@@ -308,7 +445,7 @@ export default function BusinessManagementPage() {
               className="justify-start h-auto p-4"
             >
               <Link
-                href={`/customer-panel/categories/new?businessId=${params.id}`}
+                href={`/customer-panel/categories/new?businessId=${providerId}`}
               >
                 <div className="text-right">
                   <Menu className="w-5 h-5 mb-2" />
@@ -373,7 +510,7 @@ export default function BusinessManagementPage() {
               <p>هیچ دسته‌بندی‌ای یافت نشد</p>
               <Button asChild className="mt-4">
                 <Link
-                  href={`/customer-panel/categories/new?businessId=${params.id}`}
+                  href={`/customer-panel/categories/new?businessId=${providerId}`}
                 >
                   ایجاد اولین دسته‌بندی
                 </Link>
@@ -438,7 +575,7 @@ export default function BusinessManagementPage() {
               <p>هیچ آیتم منو‌ای یافت نشد</p>
               <Button asChild className="mt-4">
                 <Link
-                  href={`/customer-panel/menu-items/new?businessId=${params.id}`}
+                  href={`/customer-panel/menu-items/new?businessId=${providerId}`}
                 >
                   افزودن اولین آیتم
                 </Link>
@@ -500,313 +637,126 @@ export default function BusinessManagementPage() {
     if (!business) return null;
 
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>اطلاعات پایه</CardTitle>
-            <CardDescription>ویرایش اطلاعات اصلی کسب‌وکار</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">نام کسب‌وکار</Label>
-                <Input
-                  id="name"
-                  value={business.name}
-                  onChange={(e) =>
-                    setBusiness({ ...business, name: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nameEn">نام انگلیسی</Label>
-                <Input
-                  id="nameEn"
-                  value={business.nameEn || ""}
-                  onChange={(e) =>
-                    setBusiness({ ...business, nameEn: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">توضیحات</Label>
-              <Textarea
-                id="description"
-                value={business.description || ""}
-                onChange={(e) =>
-                  setBusiness({ ...business, description: e.target.value })
-                }
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">تلفن</Label>
-                <Input
-                  id="phone"
-                  value={business.phone}
-                  onChange={(e) =>
-                    setBusiness({ ...business, phone: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">ایمیل</Label>
-                <Input
-                  id="email"
-                  value={business.email || ""}
-                  onChange={(e) =>
-                    setBusiness({ ...business, email: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-base font-medium">آدرس</Label>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="street">آدرس کامل</Label>
-                  <Textarea
-                    id="street"
-                    value={business.address.street}
-                    onChange={(e) =>
-                      setBusiness({
-                        ...business,
-                        address: {
-                          ...business.address,
-                          street: e.target.value,
-                        },
-                      })
-                    }
-                    rows={2}
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">شهر</Label>
-                    <Input
-                      id="city"
-                      value={business.address.city}
-                      onChange={(e) =>
-                        setBusiness({
-                          ...business,
-                          address: {
-                            ...business.address,
-                            city: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state">استان</Label>
-                    <Input
-                      id="state"
-                      value={business.address.state}
-                      onChange={(e) =>
-                        setBusiness({
-                          ...business,
-                          address: {
-                            ...business.address,
-                            state: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">کد پستی</Label>
-                    <Input
-                      id="postalCode"
-                      value={business.address.postalCode || ""}
-                      onChange={(e) =>
-                        setBusiness({
-                          ...business,
-                          address: {
-                            ...business.address,
-                            postalCode: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                onClick={() => handleBusinessUpdate(business)}
-                disabled={saving}
-                className="premium-button"
-              >
-                {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>شبکه‌های اجتماعی</CardTitle>
-            <CardDescription>
-              لینک‌های شبکه‌های اجتماعی و وب‌سایت
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="website" className="flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
-                  وب‌سایت
-                </Label>
-                <Input
-                  id="website"
-                  value={business.website || ""}
-                  onChange={(e) =>
-                    setBusiness({ ...business, website: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="instagram" className="flex items-center gap-2">
-                  <Instagram className="w-4 h-4" />
-                  اینستاگرام
-                </Label>
-                <Input
-                  id="instagram"
-                  value={business.instagram || ""}
-                  onChange={(e) =>
-                    setBusiness({ ...business, instagram: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                onClick={() => handleBusinessUpdate(business)}
-                disabled={saving}
-                className="premium-button"
-              >
-                {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <BusinessInfoForm
+        business={business}
+        setBusiness={setBusiness}
+        onSubmit={handleBusinessUpdate}
+      />
     );
   };
+
+
 
   const renderWorkingHoursTab = () => {
     if (!business) return null;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            ساعات کاری
-          </CardTitle>
-          <CardDescription>تنظیم ساعات کاری کسب‌وکار</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {DAYS.map((day) => {
-              const workingHour = business.workingHours.find(
-                (wh) => wh.day === day.key,
-              );
-              return (
-                <div
-                  key={day.key}
-                  className="flex items-center gap-4 p-4 border rounded-lg"
+      <Form {...workingHoursForm}>
+        <form onSubmit={workingHoursForm.handleSubmit(onSubmitWorkingHours)}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                ساعات کاری
+              </CardTitle>
+              <CardDescription>تنظیم ساعات کاری کسب‌وکار</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {DAYS.map((day, index) => {
+                  const workingHour = business.workingHours.find(
+                    (wh) => wh.day === day.key
+                  );
+                  return (
+                    <div
+                      key={day.key}
+                      className="flex items-center gap-4 p-4 border rounded-lg"
+                    >
+                      <div className="w-20">
+                        <Label className="text-sm font-medium">
+                          {day.label}
+                        </Label>
+                      </div>
+                      <FormField
+                        control={workingHoursForm.control}
+                        name={`workingHours.${index}.isOpen`}
+                        render={({ field }) => (
+                          <FormItem className="flex items-center gap-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value || false}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm cursor-pointer">
+                              فعال
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      {workingHour?.isOpen && (
+                        <>
+                          <FormField
+                            control={workingHoursForm.control}
+                            name={`workingHours.${index}.openTime`}
+                            render={({ field }) => (
+                              <FormItem className="flex items-center gap-2">
+                                <FormLabel className="text-sm">از:</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="time"
+                                    className="w-24"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={workingHoursForm.control}
+                            name={`workingHours.${index}.closeTime`}
+                            render={({ field }) => (
+                              <Field className="flex items-center gap-2">
+                                <FieldLabel className="text-sm">تا:</FieldLabel>
+                                <Input
+                                  {...field}
+                                  type="time"
+                                  className="w-24"
+                                  data-invalid={
+                                    !!workingHoursForm.formState.errors
+                                      ?.workingHours?.[index]?.closeTime
+                                  }
+                                />
+                                {workingHoursForm.formState.errors
+                                  ?.workingHours?.[index]?.closeTime && (
+                                  <FieldError>
+                                    {workingHoursForm.formState.errors?.workingHours?.[
+                                      index
+                                    ]?.closeTime?.message?.toString()}
+                                  </FieldError>
+                                )}
+                              </Field>
+                            )}
+                          />
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-end mt-6">
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="premium-button"
                 >
-                  <div className="w-20">
-                    <Label className="text-sm font-medium">{day.label}</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={workingHour?.isOpen || false}
-                      onCheckedChange={(checked) => {
-                        const updatedWorkingHours = business.workingHours.map(
-                          (wh) =>
-                            wh.day === day.key
-                              ? { ...wh, isOpen: checked }
-                              : wh,
-                        );
-                        setBusiness({
-                          ...business,
-                          workingHours: updatedWorkingHours,
-                        });
-                      }}
-                    />
-                    <Label className="text-sm">فعال</Label>
-                  </div>
-                  {workingHour?.isOpen && (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm">از:</Label>
-                        <Input
-                          type="time"
-                          value={workingHour.openTime || "09:00"}
-                          onChange={(e) => {
-                            const updatedWorkingHours =
-                              business.workingHours.map((wh) =>
-                                wh.day === day.key
-                                  ? { ...wh, openTime: e.target.value }
-                                  : wh,
-                              );
-                            setBusiness({
-                              ...business,
-                              workingHours: updatedWorkingHours,
-                            });
-                          }}
-                          className="w-24"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm">تا:</Label>
-                        <Input
-                          type="time"
-                          value={workingHour.closeTime || "22:00"}
-                          onChange={(e) => {
-                            const updatedWorkingHours =
-                              business.workingHours.map((wh) =>
-                                wh.day === day.key
-                                  ? { ...wh, closeTime: e.target.value }
-                                  : wh,
-                              );
-                            setBusiness({
-                              ...business,
-                              workingHours: updatedWorkingHours,
-                            });
-                          }}
-                          className="w-24"
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex justify-end mt-6">
-            <Button
-              onClick={() =>
-                handleBusinessUpdate({ workingHours: business.workingHours })
-              }
-              disabled={saving}
-              className="premium-button"
-            >
-              {saving ? "در حال ذخیره..." : "ذخیره ساعات کاری"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                  {saving ? "در حال ذخیره..." : "ذخیره ساعات کاری"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
     );
   };
 
@@ -814,105 +764,105 @@ export default function BusinessManagementPage() {
     if (!business) return null;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>تنظیمات منو</CardTitle>
-          <CardDescription>تنظیمات نمایش و عملکرد منو</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">نمایش قیمت‌ها</Label>
-                <p className="text-sm text-muted-foreground">
-                  قیمت آیتم‌ها در منو نمایش داده شود
-                </p>
-              </div>
-              <Checkbox
-                checked={business.settings.showPrices}
-                onCheckedChange={(checked) =>
-                  setBusiness({
-                    ...business,
-                    settings: { ...business.settings, showPrices: checked },
-                  })
-                }
-              />
-            </div>
+      <div className="space-y-6">
+        <Form {...settingsForm}>
+          <form onSubmit={settingsForm.handleSubmit(onSubmitSettings)}>
+            <Card>
+              <CardHeader>
+                <CardTitle>تنظیمات منو</CardTitle>
+                <CardDescription>
+                  مدیریت تنظیمات نمایش منو و سفارشات
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <FormField
+                    control={settingsForm.control}
+                    name="showPrices"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="cursor-pointer">
+                          نمایش قیمت‌ها
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">نمایش کالری</Label>
-                <p className="text-sm text-muted-foreground">
-                  تعداد کالری آیتم‌ها نمایش داده شود
-                </p>
-              </div>
-              <Checkbox
-                checked={business.settings.showCalories}
-                onCheckedChange={(checked) =>
-                  setBusiness({
-                    ...business,
-                    settings: { ...business.settings, showCalories: checked },
-                  })
-                }
-              />
-            </div>
+                  <FormField
+                    control={settingsForm.control}
+                    name="showCalories"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="cursor-pointer">
+                          نمایش کالری
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">نمایش مواد تشکیل‌دهنده</Label>
-                <p className="text-sm text-muted-foreground">
-                  مواد اولیه آیتم‌ها نمایش داده شود
-                </p>
-              </div>
-              <Checkbox
-                checked={business.settings.showIngredients}
-                onCheckedChange={(checked) =>
-                  setBusiness({
-                    ...business,
-                    settings: {
-                      ...business.settings,
-                      showIngredients: checked,
-                    },
-                  })
-                }
-              />
-            </div>
+                  <FormField
+                    control={settingsForm.control}
+                    name="showIngredients"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="cursor-pointer">
+                          نمایش مواد تشکیل‌دهنده
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">سفارش آنلاین</Label>
-                <p className="text-sm text-muted-foreground">
-                  امکان سفارش آنلاین برای مشتریان
-                </p>
-              </div>
-              <Checkbox
-                checked={business.settings.allowOnlineOrdering}
-                onCheckedChange={(checked) =>
-                  setBusiness({
-                    ...business,
-                    settings: {
-                      ...business.settings,
-                      allowOnlineOrdering: checked,
-                    },
-                  })
-                }
-              />
-            </div>
-          </div>
+                  <FormField
+                    control={settingsForm.control}
+                    name="allowOnlineOrdering"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="cursor-pointer">
+                          سفارش آنلاین
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-          <div className="flex justify-end">
-            <Button
-              onClick={() =>
-                handleBusinessUpdate({ settings: business.settings })
-              }
-              disabled={saving}
-              className="premium-button"
-            >
-              {saving ? "در حال ذخیره..." : "ذخیره تنظیمات"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="premium-button"
+                  >
+                    {saving ? "در حال ذخیره..." : "ذخیره تنظیمات"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
+      </div>
     );
   };
 

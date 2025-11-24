@@ -1,5 +1,5 @@
-import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
   _id: string;
@@ -14,52 +14,6 @@ export interface IUser extends Document {
   verificationToken?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-  business?: {
-    name: string;
-    nameEn?: string;
-    description?: string;
-    descriptionEn?: string;
-    slug: string;
-    logo?: string;
-    coverImage?: string;
-    businessType: string;
-    address: {
-      street: string;
-      city: string;
-      state: string;
-      postalCode?: string;
-      coordinates?: {
-        lat: number;
-        lng: number;
-      };
-    };
-    workingHours: {
-      day: string;
-      isOpen: boolean;
-      openTime?: string;
-      closeTime?: string;
-    }[];
-    phone: string;
-    email?: string;
-    website?: string;
-    instagram?: string;
-    telegram?: string;
-    whatsapp?: string;
-    cuisine: string[];
-    priceRange: "budget" | "moderate" | "expensive" | "fine-dining";
-    features: string[];
-    settings: {
-      allowOnlineOrdering: boolean;
-      showPrices: boolean;
-      showCalories: boolean;
-      showIngredients: boolean;
-      theme: string;
-      primaryColor?: string;
-      secondaryColor?: string;
-    };
-    isActive: boolean;
-    isCompleted: boolean;
-  };
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -125,213 +79,20 @@ const UserSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
-    business: {
-      name: {
-        type: String,
-        trim: true,
-        maxlength: [100, "Business name cannot exceed 100 characters"],
-      },
-      nameEn: {
-        type: String,
-        trim: true,
-        maxlength: [100, "English name cannot exceed 100 characters"],
-      },
-      description: {
-        type: String,
-        trim: true,
-        maxlength: [500, "Description cannot exceed 500 characters"],
-      },
-      descriptionEn: {
-        type: String,
-        trim: true,
-        maxlength: [500, "English description cannot exceed 500 characters"],
-      },
-      slug: {
-        type: String,
-        unique: true,
-        lowercase: true,
-        trim: true,
-        sparse: true,
-        match: [
-          /^[a-z0-9-]+$/,
-          "Slug can only contain lowercase letters, numbers, and hyphens",
-        ],
-      },
-      logo: {
-        type: String,
-        default: null,
-      },
-      coverImage: {
-        type: String,
-        default: null,
-      },
-      businessType: {
-        type: String,
-        enum: [
-          "restaurant",
-          "cafe",
-          "bakery",
-          "fast-food",
-          "food-truck",
-          "catering",
-          "other",
-        ],
-      },
-      address: {
-        street: {
-          type: String,
-          trim: true,
-        },
-        city: {
-          type: String,
-          trim: true,
-        },
-        state: {
-          type: String,
-          trim: true,
-        },
-        postalCode: {
-          type: String,
-          trim: true,
-        },
-        coordinates: {
-          lat: { type: Number },
-          lng: { type: Number },
-        },
-      },
-      workingHours: [
-        {
-          day: {
-            type: String,
-            enum: [
-              "monday",
-              "tuesday",
-              "wednesday",
-              "thursday",
-              "friday",
-              "saturday",
-              "sunday",
-            ],
-          },
-          isOpen: {
-            type: Boolean,
-            default: true,
-          },
-          openTime: {
-            type: String,
-            match: [
-              /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-              "Please enter a valid time format (HH:MM)",
-            ],
-          },
-          closeTime: {
-            type: String,
-            match: [
-              /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-              "Please enter a valid time format (HH:MM)",
-            ],
-          },
-        },
-      ],
-      phone: {
-        type: String,
-        trim: true,
-        match: [/^09[0-9]{9}$/, "Please enter a valid phone number"],
-      },
-      email: {
-        type: String,
-        lowercase: true,
-        trim: true,
-        match: [
-          /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-          "Please enter a valid email",
-        ],
-      },
-      website: {
-        type: String,
-        trim: true,
-      },
-      instagram: {
-        type: String,
-        trim: true,
-      },
-      telegram: {
-        type: String,
-        trim: true,
-      },
-      whatsapp: {
-        type: String,
-        trim: true,
-      },
-      cuisine: [
-        {
-          type: String,
-          trim: true,
-        },
-      ],
-      priceRange: {
-        type: String,
-        enum: ["budget", "moderate", "expensive", "fine-dining"],
-        default: "moderate",
-      },
-      features: [
-        {
-          type: String,
-          trim: true,
-        },
-      ],
-      settings: {
-        allowOnlineOrdering: {
-          type: Boolean,
-          default: false,
-        },
-        showPrices: {
-          type: Boolean,
-          default: true,
-        },
-        showCalories: {
-          type: Boolean,
-          default: false,
-        },
-        showIngredients: {
-          type: Boolean,
-          default: false,
-        },
-        theme: {
-          type: String,
-          default: "default",
-        },
-        primaryColor: {
-          type: String,
-          default: "#d4a574",
-        },
-        secondaryColor: {
-          type: String,
-          default: "#f4e4c1",
-        },
-      },
-      isActive: {
-        type: Boolean,
-        default: true,
-      },
-      isCompleted: {
-        type: Boolean,
-        default: false,
-      },
-    },
   },
   {
     timestamps: true,
     toJSON: {
       transform: function (doc, ret) {
-        delete ret.password;
-        delete ret.verificationToken;
-        delete ret.resetPasswordToken;
-        delete ret.resetPasswordExpires;
-        return ret;
+        const r: any = ret;
+        delete r.password;
+        delete r.verificationToken;
+        delete r.resetPasswordToken;
+        delete r.resetPasswordExpires;
+        return r;
       },
     },
-  },
+  }
 );
 
 // Hash password before saving
@@ -349,7 +110,7 @@ UserSchema.pre("save", async function (next) {
 
 // Compare password method
 UserSchema.methods.comparePassword = async function (
-  candidatePassword: string,
+  candidatePassword: string
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };

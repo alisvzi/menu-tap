@@ -1,7 +1,7 @@
 "use client";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ChevronLeft, Menu } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import SheetMenu from "./SheetMenu";
 

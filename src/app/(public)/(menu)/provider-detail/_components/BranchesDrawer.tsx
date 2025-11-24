@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Drawer,
   DrawerClose,
@@ -10,37 +9,57 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ChevronUp, MapPin } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 
-const branches = [
-  {
-    name: "شعبه مرکزی",
-    address: "تهران، خیابان ولیعصر، بالاتر از پارک ساعی، پلاک ۲۴۵۰",
-  },
-  {
-    name: "شعبه شرق",
-    address: "تهران، نارمک، میدان هفت‌حوض، خیابان گلبرگ شرقی، پلاک ۸۲",
-  },
-  {
-    name: "شعبه غرب",
-    address: "تهران، صادقیه، بلوار آیت‌الله کاشانی، نرسیده به شهرزیبا، پلاک ۱۸",
-  },
-];
+interface Address {
+  city: string;
+  street: string;
+  postalCode?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
 
-export default function BranchesDrawer() {
+interface Branch {
+  name: string;
+  address: string;
+  phone?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
+interface BranchesDrawerProps {
+  mainAddress: Address;
+  branches?: Branch[];
+}
+
+export default function BranchesDrawer({
+  mainAddress,
+  branches,
+}: BranchesDrawerProps) {
+  const allLocations = [
+    {
+      name: "آدرس اصلی",
+      address: `${mainAddress.city}, ${mainAddress.street}`,
+      phone: undefined,
+    },
+    ...(branches || []),
+  ];
   return (
     <Drawer direction="bottom">
       <DrawerTrigger asChild>
-        <Card className="flex flex-row justify-between items-center p-3 gap-2 rounded-xl cursor-pointer hover:bg-accent/50 transition-colors">
-          <MapPin className="w-5 h-5 text-primary" />
-          <p className="text-xs text-muted-foreground whitespace-nowrap">
+        <div className="flex flex-row justify-between items-center p-2 gap-2 rounded-xl cursor-pointer hover:bg-accent/50 transition-colors border border-border">
+          <MapPin className="w-5 h-5 text-foreground" />
+          <p className="text-xs text-foreground whitespace-nowrap">
             نمایش آدرس
           </p>
-          <ChevronUp className="text-muted-foreground" />
-        </Card>
+        </div>
       </DrawerTrigger>
 
-      <DrawerContent className="border-none shadow-2xl rounded-t-3xl text-right">
+      <DrawerContent className="max-w-xl mx-auto">
         <DrawerHeader className="text-right border-b border-border pb-3">
           <DrawerTitle className="text-lg font-bold text-card-foreground flex items-center justify-center gap-2">
             آدرس شعب مجموعه
@@ -51,15 +70,26 @@ export default function BranchesDrawer() {
         </DrawerHeader>
 
         <div className="p-5 space-y-3 overflow-y-auto">
-          {branches.map((branch) => (
+          {allLocations.map((location, index) => (
             <div
-              key={branch.name}
-              className="flex flex-col gap-1 bg-card shadow-md p-3 border border-border rounded-2xl"
+              key={index}
+              className="flex flex-col gap-2 bg-card shadow-md p-3 border border-border rounded-2xl"
             >
-              <span className="font-semibold">{branch.name}</span>
+              <span className="font-semibold">{location.name}</span>
               <span className="text-sm text-muted-foreground leading-relaxed">
-                {branch.address}
+                {location.address}
               </span>
+              {location.phone && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Phone className="w-3 h-3 text-muted-foreground" />
+                  <a
+                    href={`tel:${location.phone}`}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {location.phone}
+                  </a>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -13,6 +13,16 @@ import {
   Star
 } from "lucide-react";
 
+type ChangeType = 'positive' | 'negative' | 'neutral';
+type StatItem = {
+  title: string;
+  value: number | string;
+  icon: any;
+  change: string;
+  changeType: ChangeType;
+  description: string;
+};
+
 interface DashboardStatsProps {
   stats: {
     totalBusinesses: number;
@@ -28,7 +38,7 @@ interface DashboardStatsProps {
 }
 
 export function DashboardStats({ stats, loading = false }: DashboardStatsProps) {
-  const statItems = [
+  const statItems: StatItem[] = [
     {
       title: "کل کسب‌وکارها",
       value: stats.totalBusinesses,

@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { useAuth } from "@/lib/auth/context";
-import { ErrorHandler } from "@/lib/errors";
-import { BusinessProfileData } from "@/types/auth";
+import { Form, FormField } from "@/components/forms/field";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,10 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -24,26 +27,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Form, FormField, Field } from "@/components/forms/field";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth/context";
+import { ErrorHandler } from "@/lib/errors";
+import { BusinessProfileData } from "@/types/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  AlertCircle,
   ArrowRight,
-  Store,
+  CheckCircle,
+  Clock,
+  Globe,
   MapPin,
   Phone,
-  Mail,
-  Globe,
-  Instagram,
-  MessageCircle,
-  Clock,
+  Store,
   X,
-  AlertCircle,
-  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { FieldPath } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { businessProfileSchema } from "../_types/business-schema";
 
-const DAYS = [
+type DayKey =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+const DAYS: { key: DayKey; label: string }[] = [
   { key: "monday", label: "دوشنبه" },
   { key: "tuesday", label: "سه‌شنبه" },
   { key: "wednesday", label: "چهارشنبه" },
@@ -53,7 +69,7 @@ const DAYS = [
   { key: "sunday", label: "یکشنبه" },
 ];
 
-const BUSINESS_TYPES = [
+const PROVIDER_TYPES = [
   { value: "restaurant", label: "رستوران" },
   { value: "cafe", label: "کافه" },
   { value: "bakery", label: "نانوایی" },
@@ -93,95 +109,188 @@ const FEATURES = [
 
 export default function BusinessProfilePage() {
   const router = useRouter();
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
 
   const form = useForm<BusinessProfileData>({
+    resolver: zodResolver(businessProfileSchema),
     defaultValues: {
-      name: user?.business?.name || "",
-      nameEn: user?.business?.nameEn || "",
-      description: user?.business?.description || "",
-      descriptionEn: user?.business?.descriptionEn || "",
-      slug: user?.business?.slug || "",
-      businessType: user?.business?.businessType || "",
+      name: "",
+      nameEn: "",
+      description: "",
+      descriptionEn: "",
+      slug: "",
+      providerType: "",
+      logo: "",
+      coverImage: "",
       address: {
-        street: user?.business?.address?.street || "",
-        city: user?.business?.address?.city || "",
-        state: user?.business?.address?.state || "",
-        postalCode: user?.business?.address?.postalCode || "",
+        street: "",
+        city: "",
+        state: "",
+        postalCode: "",
       },
-      workingHours:
-        user?.business?.workingHours ||
-        DAYS.map((day) => ({
-          day: day.key,
-          isOpen: true,
-          openTime: "09:00",
-          closeTime: "22:00",
-        })),
-      phone: user?.business?.phone || "",
-      email: user?.business?.email || "",
-      website: user?.business?.website || "",
-      instagram: user?.business?.instagram || "",
-      telegram: user?.business?.telegram || "",
-      whatsapp: user?.business?.whatsapp || "",
-      priceRange: user?.business?.priceRange || "moderate",
-      cuisine: user?.business?.cuisine || [],
-      features: user?.business?.features || [],
+      workingHours: DAYS.map((day) => ({
+        day: day.key,
+        isOpen: true,
+        openTime: "09:00",
+        closeTime: "22:00",
+      })),
+      phone: "",
+      email: "",
+      website: "",
+      instagram: "",
+      telegram: "",
+      whatsapp: "",
+      priceRange: "moderate",
+      cuisine: [],
+      features: [],
+      branches: [],
+      isActive: true,
+      isVerified: false,
     },
   });
 
   const watchName = form.watch("name");
   const watchSlug = form.watch("slug");
+  const [
+    stepName,
+    stepProviderType,
+    stepSlug,
+    stepAddressStreet,
+    stepAddressCity,
+    stepAddressState,
+    stepPhone,
+  ] = form.watch([
+    "name",
+    "providerType",
+    "slug",
+    "address.street",
+    "address.city",
+    "address.state",
+    "phone",
+  ]);
+  const isStepOneFilled = [
+    stepName,
+    stepProviderType,
+    stepSlug,
+    stepAddressStreet,
+    stepAddressCity,
+    stepAddressState,
+    stepPhone,
+  ].every((value) => typeof value === "string" && value.trim().length > 0);
 
-  // Auto-generate slug from name
-  useState(() => {
-    if (watchName && (!watchSlug || watchSlug === "")) {
-      const slug = watchName
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .trim();
-      form.setValue("slug", slug);
-    }
-  });
-
-  const validateStep = (stepNumber: number) => {
-    const values = form.getValues();
-    switch (stepNumber) {
-      case 1:
-        return (
-          values.name &&
-          values.phone &&
-          values.businessType &&
-          values.address.street &&
-          values.address.city &&
-          values.address.state &&
-          values.slug
-        );
-      case 2:
-        return true; // Working hours are optional
-      case 3:
-        return true; // Additional info is optional
-      default:
-        return true;
-    }
+  const STEP_VALIDATION_FIELDS: Record<
+    number,
+    FieldPath<BusinessProfileData>[]
+  > = {
+    1: [
+      "name",
+      "providerType",
+      "slug",
+      "address.street",
+      "address.city",
+      "address.state",
+      "phone",
+    ],
+    2: [],
+    3: [],
   };
 
-  const handleNextStep = () => {
-    if (validateStep(step)) {
-      setStep(step + 1);
+  const slugifyFa = (text: string) => {
+    const map: Record<string, string> = {
+      آ: "a",
+      ا: "a",
+      ب: "b",
+      پ: "p",
+      ت: "t",
+      ث: "s",
+      ج: "j",
+      چ: "ch",
+      ح: "h",
+      خ: "kh",
+      د: "d",
+      ذ: "z",
+      ر: "r",
+      ز: "z",
+      ژ: "zh",
+      س: "s",
+      ش: "sh",
+      ص: "s",
+      ض: "z",
+      ط: "t",
+      ظ: "z",
+      ع: "a",
+      غ: "gh",
+      ف: "f",
+      ق: "q",
+      ک: "k",
+      گ: "g",
+      ل: "l",
+      م: "m",
+      ن: "n",
+      و: "o",
+      ه: "h",
+      ی: "y",
+      ء: "",
+      ئ: "y",
+      ؤ: "o",
+      ي: "y",
+      ك: "k",
+      "۰": "0",
+      "۱": "1",
+      "۲": "2",
+      "۳": "3",
+      "۴": "4",
+      "۵": "5",
+      "۶": "6",
+      "۷": "7",
+      "۸": "8",
+      "۹": "9",
+    };
+    const normalized = (text || "")
+      .split("")
+      .map((ch) => map[ch] ?? ch)
+      .join("")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim();
+    return normalized;
+  };
+
+  const normalizeDigits = (text: string) => {
+    const fa = "۰۱۲۳۴۵۶۷۸۹";
+    const en = "0123456789";
+    return (text || "").replace(/[۰-۹]/g, (d) => en[fa.indexOf(d)]);
+  };
+
+  useEffect(() => {
+    if (watchName && (!watchSlug || watchSlug === "")) {
+      const slug = slugifyFa(watchName);
+      form.setValue("slug", slug);
     }
+  }, [watchName, watchSlug, form]);
+
+  const handleNextStep = async () => {
+    const fieldsToValidate = STEP_VALIDATION_FIELDS[step] || [];
+    if (fieldsToValidate.length > 0) {
+      const isValid = await form.trigger(fieldsToValidate);
+      if (!isValid) {
+        return;
+      }
+    }
+    setStep((prev) => prev + 1);
   };
 
   const handlePrevStep = () => {
-    setStep(step - 1);
+    setStep((prev) => Math.max(1, prev - 1));
   };
 
   const handleCuisineToggle = (cuisine: string) => {
-    const currentCuisines = form.getValues("cuisine");
+    const currentCuisines = form.getValues("cuisine") || [];
     const updatedCuisines = currentCuisines.includes(cuisine)
       ? currentCuisines.filter((c) => c !== cuisine)
       : [...currentCuisines, cuisine];
@@ -189,7 +298,7 @@ export default function BusinessProfilePage() {
   };
 
   const handleFeatureToggle = (feature: string) => {
-    const currentFeatures = form.getValues("features");
+    const currentFeatures = form.getValues("features") || [];
     const updatedFeatures = currentFeatures.includes(feature)
       ? currentFeatures.filter((f) => f !== feature)
       : [...currentFeatures, feature];
@@ -197,13 +306,13 @@ export default function BusinessProfilePage() {
   };
 
   const handleWorkingHourChange = (
-    dayKey: string,
+    dayKey: DayKey,
     field: string,
-    value: string | boolean,
+    value: string | boolean
   ) => {
-    const currentHours = form.getValues("workingHours");
+    const currentHours = form.getValues("workingHours") || [];
     const updatedHours = currentHours.map((hour) =>
-      hour.day === dayKey ? { ...hour, [field]: value } : hour,
+      hour.day === dayKey ? { ...hour, [field]: value } : hour
     );
     form.setValue("workingHours", updatedHours);
   };
@@ -212,9 +321,10 @@ export default function BusinessProfilePage() {
     try {
       setLoading(true);
       setError("");
-
-      await updateProfile({
-        business: {
+      const res = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           ...data,
           settings: {
             allowOnlineOrdering: false,
@@ -225,12 +335,19 @@ export default function BusinessProfilePage() {
             primaryColor: "#d4a574",
             secondaryColor: "#f4e4c1",
           },
-          isActive: true,
-          isCompleted: true,
-        },
+          isActive: data.isActive,
+          isVerified: data.isVerified,
+          branches: data.branches,
+        }),
       });
 
-      router.push("/customer-panel");
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json?.message || "ایجاد کسب‌وکار ناموفق بود");
+      }
+
+      const slug = json?.data?.slug || data.slug;
+      router.push(`/customer-panel/businesses/${slug}`);
     } catch (err) {
       const errorInfo = ErrorHandler.handle(err);
       setError(errorInfo.message);
@@ -264,41 +381,75 @@ export default function BusinessProfilePage() {
                     message: "نام نمی‌تواند بیش از ۱۰۰ کاراکتر باشد",
                   },
                 }}
-                render={({ field }) => (
-                  <Field label="نام کسب‌وکار" required>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="name">نام کسب‌وکار</FieldLabel>
                     <Input
+                      id="name"
                       {...field}
                       placeholder="رستوران سنتی پارسی"
                       disabled={loading}
                     />
+                    <FieldDescription>
+                      نام کسب‌وکار خود را وارد کنید
+                    </FieldDescription>
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
                   </Field>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="businessType"
+                name="nameEn"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="nameEn">نام انگلیسی</FieldLabel>
+                    <Input
+                      id="nameEn"
+                      {...field}
+                      placeholder="Parsi Restaurant"
+                      disabled={loading}
+                    />
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
+                  </Field>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="providerType"
                 rules={{
                   required: "نوع کسب‌وکار الزامی است",
                 }}
-                render={({ field }) => (
-                  <Field label="نوع کسب‌وکار" required>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="providerType">نوع کسب‌وکار</FieldLabel>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
                       disabled={loading}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="providerType">
                         <SelectValue placeholder="نوع کسب‌وکار را انتخاب کنید" />
                       </SelectTrigger>
                       <SelectContent>
-                        {BUSINESS_TYPES.map((type) => (
+                        {PROVIDER_TYPES.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
                             {type.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <FieldDescription>
+                      نوع کسب‌وکار خود را انتخاب کنید
+                    </FieldDescription>
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
                   </Field>
                 )}
               />
@@ -314,19 +465,23 @@ export default function BusinessProfilePage() {
                   message: "فقط حروف انگلیسی کوچک، اعداد و خط تیره مجاز است",
                 },
               }}
-              render={({ field }) => (
-                <Field
-                  label="آدرس منو (URL)"
-                  required
-                  description={`منوی شما در آدرس: bestmenu.ir/menu/${
-                    field.value || "your-slug"
-                  } قابل دسترسی خواهد بود`}
-                >
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="slug">آدرس منو (URL)</FieldLabel>
                   <Input
+                    id="slug"
                     {...field}
                     placeholder="parsi-restaurant"
                     disabled={loading}
                   />
+                  <FieldDescription>
+                    {`منوی شما در آدرس: bestmenu.ir/menu/${
+                      field.value || "your-slug"
+                    } قابل دسترسی خواهد بود`}
+                  </FieldDescription>
+                  {fieldState.error && (
+                    <FieldError>{fieldState.error.message}</FieldError>
+                  )}
                 </Field>
               )}
             />
@@ -335,14 +490,41 @@ export default function BusinessProfilePage() {
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field }) => (
-                  <Field label="توضیحات">
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="description">توضیحات</FieldLabel>
                     <Textarea
+                      id="description"
                       {...field}
                       placeholder="بهترین غذاهای سنتی ایرانی..."
                       rows={3}
                       disabled={loading}
                     />
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
+                  </Field>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="descriptionEn"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="descriptionEn">
+                      توضیحات انگلیسی
+                    </FieldLabel>
+                    <Textarea
+                      id="descriptionEn"
+                      {...field}
+                      placeholder="Best traditional Persian cuisine..."
+                      rows={3}
+                      disabled={loading}
+                    />
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
                   </Field>
                 )}
               />
@@ -350,14 +532,15 @@ export default function BusinessProfilePage() {
               <FormField
                 control={form.control}
                 name="priceRange"
-                render={({ field }) => (
-                  <Field label="محدوده قیمت">
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="priceRange">محدوده قیمت</FieldLabel>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
                       disabled={loading}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="priceRange">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -367,9 +550,88 @@ export default function BusinessProfilePage() {
                         <SelectItem value="fine-dining">لوکس</SelectItem>
                       </SelectContent>
                     </Select>
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
                   </Field>
                 )}
               />
+            </div>
+
+            {/* Images */}
+            <div className="space-y-4">
+              <Label className="text-base font-medium">تصاویر کسب‌وکار</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="logo"
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="logo">لوگوی کسب‌وکار</FieldLabel>
+                      <ImageUpload
+                        value={
+                          field.value
+                            ? [
+                                {
+                                  url: field.value,
+                                  name: "logo",
+                                  size: 0,
+                                  type: "image/*",
+                                },
+                              ]
+                            : []
+                        }
+                        onChange={(images) =>
+                          field.onChange(images[0]?.url || "")
+                        }
+                        maxFiles={1}
+                        maxSize={5}
+                        folder="businesses/logos"
+                        variant="single"
+                        disabled={loading}
+                      />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="coverImage"
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="coverImage">تصویر کاور</FieldLabel>
+                      <ImageUpload
+                        value={
+                          field.value
+                            ? [
+                                {
+                                  url: field.value,
+                                  name: "cover",
+                                  size: 0,
+                                  type: "image/*",
+                                },
+                              ]
+                            : []
+                        }
+                        onChange={(images) =>
+                          field.onChange(images[0]?.url || "")
+                        }
+                        maxFiles={1}
+                        maxSize={8}
+                        folder="businesses/covers"
+                        variant="single"
+                        disabled={loading}
+                      />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
+                    </Field>
+                  )}
+                />
+              </div>
             </div>
 
             {/* Contact Information */}
@@ -389,13 +651,21 @@ export default function BusinessProfilePage() {
                       message: "شماره تلفن صحیح نیست",
                     },
                   }}
-                  render={({ field }) => (
-                    <Field label="شماره تلفن" required>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="phone">شماره تلفن</FieldLabel>
                       <Input
-                        {...field}
+                        id="phone"
+                        value={field.value || ""}
+                        onChange={(e) =>
+                          field.onChange(normalizeDigits(e.target.value))
+                        }
                         placeholder="09123456789"
                         disabled={loading}
                       />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -409,14 +679,19 @@ export default function BusinessProfilePage() {
                       message: "فرمت ایمیل صحیح نیست",
                     },
                   }}
-                  render={({ field }) => (
-                    <Field label="ایمیل">
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="email">ایمیل</FieldLabel>
                       <Input
+                        id="email"
                         {...field}
                         type="email"
                         placeholder="info@restaurant.com"
                         disabled={loading}
                       />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -435,14 +710,19 @@ export default function BusinessProfilePage() {
                 rules={{
                   required: "آدرس کامل الزامی است",
                 }}
-                render={({ field }) => (
-                  <Field label="آدرس کامل" required>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="address.street">آدرس کامل</FieldLabel>
                     <Textarea
+                      id="address.street"
                       {...field}
                       placeholder="تهران، خیابان ولیعصر، کوچه..."
                       rows={2}
                       disabled={loading}
                     />
+                    {fieldState.error && (
+                      <FieldError>{fieldState.error.message}</FieldError>
+                    )}
                   </Field>
                 )}
               />
@@ -454,13 +734,18 @@ export default function BusinessProfilePage() {
                   rules={{
                     required: "شهر الزامی است",
                   }}
-                  render={({ field }) => (
-                    <Field label="شهر" required>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="address.city">شهر</FieldLabel>
                       <Input
+                        id="address.city"
                         {...field}
                         placeholder="تهران"
                         disabled={loading}
                       />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -471,13 +756,18 @@ export default function BusinessProfilePage() {
                   rules={{
                     required: "استان الزامی است",
                   }}
-                  render={({ field }) => (
-                    <Field label="استان" required>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="address.state">استان</FieldLabel>
                       <Input
+                        id="address.state"
                         {...field}
                         placeholder="تهران"
                         disabled={loading}
                       />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -485,13 +775,20 @@ export default function BusinessProfilePage() {
                 <FormField
                   control={form.control}
                   name="address.postalCode"
-                  render={({ field }) => (
-                    <Field label="کد پستی">
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="address.postalCode">
+                        کد پستی
+                      </FieldLabel>
                       <Input
+                        id="address.postalCode"
                         {...field}
                         placeholder="1234567890"
                         disabled={loading}
                       />
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -515,9 +812,9 @@ export default function BusinessProfilePage() {
       <CardContent>
         <div className="space-y-4">
           {DAYS.map((day) => {
-            const workingHour = form
-              .getValues("workingHours")
-              .find((wh) => wh.day === day.key);
+            const workingHour = (form.getValues("workingHours") || []).find(
+              (wh) => wh.day === day.key
+            );
             return (
               <div
                 key={day.key}
@@ -547,7 +844,7 @@ export default function BusinessProfilePage() {
                           handleWorkingHourChange(
                             day.key,
                             "openTime",
-                            e.target.value,
+                            e.target.value
                           )
                         }
                         className="w-24"
@@ -563,7 +860,7 @@ export default function BusinessProfilePage() {
                           handleWorkingHourChange(
                             day.key,
                             "closeTime",
-                            e.target.value,
+                            e.target.value
                           )
                         }
                         className="w-24"
@@ -584,6 +881,168 @@ export default function BusinessProfilePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
+          <CardTitle>وضعیت و شعب</CardTitle>
+          <CardDescription>فعال‌سازی کسب‌وکار و مدیریت شعب</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor="isActive">فعال</FieldLabel>
+                  <Switch
+                    id="isActive"
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </Field>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isVerified"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor="isVerified">تأیید شده</FieldLabel>
+                  <Switch
+                    id="isVerified"
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </Field>
+              )}
+            />
+          </div>
+
+          <div className="space-y-4 mt-4">
+            <Label className="text-base font-medium">شعب</Label>
+            {(form.getValues("branches") || []).length === 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  form.setValue("branches", [
+                    { title: "", address: "", coordinates: { lat: 0, lng: 0 } },
+                  ])
+                }
+              >
+                افزودن شعبه
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                {(form.getValues("branches") || []).map((br, index) => (
+                  <div key={index} className="border rounded p-3 space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name={`branches.${index}.title` as any}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>عنوان شعبه</FieldLabel>
+                            <Input
+                              {...field}
+                              placeholder="شعبه مرکزی"
+                              disabled={loading}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`branches.${index}.address` as any}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>آدرس شعبه</FieldLabel>
+                            <Textarea
+                              {...field}
+                              rows={2}
+                              placeholder="تهران، ..."
+                              disabled={loading}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name={`branches.${index}.coordinates.lat` as any}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>عرض جغرافیایی (lat)</FieldLabel>
+                            <Input
+                              type="number"
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              disabled={loading}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`branches.${index}.coordinates.lng` as any}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>طول جغرافیایی (lng)</FieldLabel>
+                            <Input
+                              type="number"
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              disabled={loading}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                    <div className="flex justify-between">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const current = form.getValues("branches") || [];
+                          const next = current.filter((_, i) => i !== index);
+                          form.setValue("branches", next);
+                        }}
+                      >
+                        حذف شعبه
+                      </Button>
+                      {index ===
+                        (form.getValues("branches") || []).length - 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const current = form.getValues("branches") || [];
+                            form.setValue("branches", [
+                              ...current,
+                              {
+                                title: "",
+                                address: "",
+                                coordinates: { lat: 0, lng: 0 },
+                              },
+                            ]);
+                          }}
+                        >
+                          افزودن شعبه
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5" />
             شبکه‌های اجتماعی
@@ -599,13 +1058,19 @@ export default function BusinessProfilePage() {
                 <FormField
                   control={form.control}
                   name="website"
-                  render={({ field }) => (
-                    <Field label="وب‌سایت" description="آدرس وب‌سایت کسب‌وکار">
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="website">وب‌سایت</FieldLabel>
                       <Input
+                        id="website"
                         {...field}
                         placeholder="https://restaurant.com"
                         disabled={loading}
                       />
+                      <FieldDescription>آدرس وب‌سایت کسب‌وکار</FieldDescription>
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -613,16 +1078,19 @@ export default function BusinessProfilePage() {
                 <FormField
                   control={form.control}
                   name="instagram"
-                  render={({ field }) => (
-                    <Field
-                      label="اینستاگرام"
-                      description="نام کاربری اینستاگرام"
-                    >
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="instagram">اینستاگرام</FieldLabel>
                       <Input
+                        id="instagram"
                         {...field}
                         placeholder="@restaurant"
                         disabled={loading}
                       />
+                      <FieldDescription>نام کاربری اینستاگرام</FieldDescription>
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -632,13 +1100,19 @@ export default function BusinessProfilePage() {
                 <FormField
                   control={form.control}
                   name="telegram"
-                  render={({ field }) => (
-                    <Field label="تلگرام" description="نام کاربری تلگرام">
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="telegram">تلگرام</FieldLabel>
                       <Input
+                        id="telegram"
                         {...field}
                         placeholder="@restaurant"
                         disabled={loading}
                       />
+                      <FieldDescription>نام کاربری تلگرام</FieldDescription>
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -646,13 +1120,19 @@ export default function BusinessProfilePage() {
                 <FormField
                   control={form.control}
                   name="whatsapp"
-                  render={({ field }) => (
-                    <Field label="واتساپ" description="شماره واتساپ">
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="whatsapp">واتساپ</FieldLabel>
                       <Input
+                        id="whatsapp"
                         {...field}
                         placeholder="09123456789"
                         disabled={loading}
                       />
+                      <FieldDescription>شماره واتساپ</FieldDescription>
+                      {fieldState.error && (
+                        <FieldError>{fieldState.error.message}</FieldError>
+                      )}
                     </Field>
                   )}
                 />
@@ -675,7 +1155,7 @@ export default function BusinessProfilePage() {
               <Badge
                 key={cuisine}
                 variant={
-                  form.getValues("cuisine").includes(cuisine)
+                  (form.getValues("cuisine") || []).includes(cuisine)
                     ? "default"
                     : "outline"
                 }
@@ -683,7 +1163,7 @@ export default function BusinessProfilePage() {
                 onClick={() => !loading && handleCuisineToggle(cuisine)}
               >
                 {cuisine}
-                {form.getValues("cuisine").includes(cuisine) && (
+                {(form.getValues("cuisine") || []).includes(cuisine) && (
                   <X className="w-3 h-3 mr-1" />
                 )}
               </Badge>
@@ -696,7 +1176,7 @@ export default function BusinessProfilePage() {
         <CardHeader>
           <CardTitle>امکانات</CardTitle>
           <CardDescription>
-            امکانات موجود در کسب‌وکار خود را مشخص کنید
+            امکانات موجود در کسب‌وکار خود را مشص کنید
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -705,7 +1185,7 @@ export default function BusinessProfilePage() {
               <Badge
                 key={feature}
                 variant={
-                  form.getValues("features").includes(feature)
+                  (form.getValues("features") || []).includes(feature)
                     ? "default"
                     : "outline"
                 }
@@ -713,7 +1193,7 @@ export default function BusinessProfilePage() {
                 onClick={() => !loading && handleFeatureToggle(feature)}
               >
                 {feature}
-                {form.getValues("features").includes(feature) && (
+                {(form.getValues("features") || []).includes(feature) && (
                   <X className="w-3 h-3 mr-1" />
                 )}
               </Badge>
@@ -740,8 +1220,8 @@ export default function BusinessProfilePage() {
             {step === 1
               ? "اطلاعات پایه"
               : step === 2
-                ? "ساعات کاری"
-                : "اطلاعات تکمیلی"}
+              ? "ساعات کاری"
+              : "اطلاعات تکمیلی"}
           </p>
         </div>
       </div>
@@ -804,7 +1284,7 @@ export default function BusinessProfilePage() {
           {step < 3 ? (
             <Button
               onClick={handleNextStep}
-              disabled={!validateStep(step) || loading}
+              disabled={loading || (step === 1 && !isStepOneFilled)}
               className="premium-button"
             >
               مرحله بعد
@@ -812,7 +1292,7 @@ export default function BusinessProfilePage() {
           ) : (
             <Button
               onClick={form.handleSubmit(onSubmit)}
-              disabled={loading || !validateStep(step)}
+              disabled={loading}
               className="premium-button"
             >
               {loading ? (

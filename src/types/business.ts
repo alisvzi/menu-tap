@@ -1,4 +1,4 @@
-// Business and restaurant related types
+// Provider and restaurant related types
 export interface Address {
   street: string;
   city: string;
@@ -27,7 +27,7 @@ export interface Branch {
   };
 }
 
-export interface BusinessSettings {
+export interface ProviderSettings {
   allowOnlineOrdering: boolean;
   showPrices: boolean;
   showCalories: boolean;
@@ -43,7 +43,7 @@ export interface SEOData {
   keywords?: string[];
 }
 
-export interface Business {
+export interface Provider {
   _id: string;
   owner: string;
   name: string;
@@ -53,6 +53,7 @@ export interface Business {
   slug: string;
   logo?: string;
   coverImage?: string;
+  providerType: string;
   phone: string;
   email?: string;
   website?: string;
@@ -69,13 +70,13 @@ export interface Business {
   isVerified: boolean;
   rating?: number;
   reviewCount?: number;
-  settings: BusinessSettings;
+  settings: ProviderSettings;
   seo: SEOData;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateBusinessData {
+export interface CreateProviderData {
   name: string;
   nameEn?: string;
   description?: string;
@@ -92,16 +93,16 @@ export interface CreateBusinessData {
   cuisine: string[];
   priceRange: 'budget' | 'moderate' | 'expensive' | 'fine-dining';
   features: string[];
-  settings?: Partial<BusinessSettings>;
+  settings?: Partial<ProviderSettings>;
 }
 
-export interface UpdateBusinessData extends Partial<CreateBusinessData> {
+export interface UpdateProviderData extends Partial<CreateProviderData> {
   logo?: string;
   coverImage?: string;
   isActive?: boolean;
 }
 
-export interface BusinessStats {
+export interface ProviderStats {
   totalViews: number;
   totalOrders: number;
   totalCategories: number;
@@ -111,7 +112,7 @@ export interface BusinessStats {
   averageRating?: number;
 }
 
-export interface BusinessCard {
+export interface ProviderCard {
   _id: string;
   name: string;
   nameEn?: string;
@@ -130,7 +131,7 @@ export interface BusinessCard {
   isVerified: boolean;
 }
 
-export interface BusinessFilters {
+export interface ProviderFilters {
   city?: string;
   cuisine?: string;
   priceRange?: string;
@@ -140,7 +141,7 @@ export interface BusinessFilters {
   isVerified?: boolean;
 }
 
-export interface BusinessFormStep {
+export interface ProviderFormStep {
   step: number;
   title: string;
   description: string;
