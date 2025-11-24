@@ -18,3 +18,12 @@ export async function uploadFiles(files: File[], folder?: string): Promise<Local
   const data = await res.json();
   return (data?.files || []) as LocalUploadedFile[];
 }
+
+export async function deleteFiles(urls: string[]): Promise<void> {
+  if (!urls.length) return;
+  await fetch("/api/uploads/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ urls }),
+  }).catch(() => {});
+}

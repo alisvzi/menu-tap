@@ -1,7 +1,6 @@
-import fs from "fs";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
+import { put } from "@vercel/blob";
 
 async function verifyToken(request: NextRequest) {
   const token =
@@ -47,40 +46,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
-    // Build target directory under public/uploads/{userId}/{folder}
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json({ error: "Missing BLOB token" }, { status: 500 });
+    }
+
     const userId = decoded?.userId || "anonymous";
-    const baseDir = path.join(process.cwd(), "public", "uploads", userId);
-    const targetDir = folder ? path.join(baseDir, folder) : baseDir;
 
-    await fs.promises.mkdir(targetDir, { recursive: true });
-
-    const saved = [] as Array<{
-      url: string;
-      name: string;
-      size: number;
-      type: string;
-    }>;
+    const uploaded = [] as Array<{ url: string; name: string; size: number; type: string }>;
 
     for (const file of files) {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
       const safeName = sanitizeFileName(file.name || "file");
-      const diskPath = path.join(targetDir, safeName);
-      await fs.promises.writeFile(diskPath, buffer);
+      const key = [userId, folder].filter(Boolean).join("/");
+      const nameWithPrefix = key ? `${key}/${safeName}` : safeName;
 
-      const publicUrl = path
-        .join("/uploads", userId, folder || "", safeName)
-        .replace(/\\/g, "/");
+      const blob = await put(nameWithPrefix, file, {
+        access: "public",
+        token,
+        addRandomSuffix: true,
+        contentType: file.type || "application/octet-stream",
+      });
 
-      saved.push({
-        url: publicUrl,
+      uploaded.push({
+        url: blob.url,
         name: file.name,
         size: file.size,
         type: file.type,
       });
     }
 
-    return NextResponse.json({ files: saved }, { status: 201 });
+    return NextResponse.json({ files: uploaded }, { status: 201 });
   } catch (error: any) {
     console.error("Upload error:", error);
     return NextResponse.json(

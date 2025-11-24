@@ -10,6 +10,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import Link from "next/link";
+import LogoBox from "../../(web-site)/_components/layout/Footer/LogoBox";
 
 const SheetMenu = () => {
   return (
@@ -20,16 +22,21 @@ const SheetMenu = () => {
         </button>
       </SheetTrigger>
       <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Edit profile</SheetTitle>
+        <SheetHeader className="pt-10">
+          <SheetTitle>منوتپ</SheetTitle>
           <SheetDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
+            این منو طراحی و دیزاین شده توسط منوتپ است
           </SheetDescription>
         </SheetHeader>
+        <div className="flex-1 flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-x-3 ">
+            <LogoBox />
+          </Link>
+        </div>
         <SheetFooter>
-          <Button type="submit">Save changes</Button>
+          {/* <Button type="submit">Save changes</Button> */}
           <SheetClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">بستن</Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { uploadFiles } from "@/utility/uploads";
+import { uploadFiles, deleteFiles } from "@/utility/uploads";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -124,7 +124,15 @@ export function ImageUpload({
     setDragActive(false);
   };
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
+    const img = value[index];
+    if (img?.url) {
+      try {
+        await deleteFiles([img.url]);
+      } catch (e) {
+        console.error("Blob delete failed", e);
+      }
+    }
     const newImages = value.filter((_, i) => i !== index);
     onChange?.(newImages);
   };

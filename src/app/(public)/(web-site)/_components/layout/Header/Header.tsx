@@ -15,7 +15,7 @@ const Header = () => {
       <div className="container px-4 py-3">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-x-3 ">
-            <div suppressHydrationWarning>
+            <div>
               {/* {isMounted ? (
                 <Image src={logoSrc} alt="Site Logo" width={150} height={26} />
               ) : (
@@ -60,8 +60,8 @@ const Header = () => {
             >
               نظرات
             </Link>
-            <Button className="premium-button text-sm px-6 py-2">
-              شروع کنید
+            <Button className="premium-button text-sm px-6 py-2" asChild>
+              <Link href="/customer-panel"> پنل مشتریان</Link>
             </Button>
             <ThemeToggle />
           </nav>
@@ -111,7 +111,9 @@ const Header = () => {
             >
               نظرات مشتریان
             </Link>
-            <Button className="w-full premium-button text-sm">شروع کنید</Button>
+            <Button className="w-full premium-button text-sm" asChild>
+              <Link href="/customer-panel"> پنل مشتریان</Link>
+            </Button>
           </nav>
         )}
       </div>

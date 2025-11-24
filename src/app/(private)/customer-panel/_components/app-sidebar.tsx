@@ -209,7 +209,7 @@ export function AppSidebar() {
             <Store className="w-4 h-4 text-primary-foreground" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">بست منو</h2>
+            <h2 className="text-lg font-semibold">منوتپ</h2>
             <p className="text-xs text-muted-foreground">پنل مدیریت</p>
           </div>
         </div>

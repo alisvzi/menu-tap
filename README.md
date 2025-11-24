@@ -5,6 +5,7 @@ A comprehensive digital menu management system built with Next.js 15, TypeScript
 ## Features
 
 ### Core Features
+
 - 🏪 **Business Management**: Create and manage multiple restaurants/businesses
 - 📋 **Menu Management**: Organize menu items with categories and detailed information
 - 🎨 **Customizable Design**: Personalize menu appearance with colors and themes
@@ -14,6 +15,7 @@ A comprehensive digital menu management system built with Next.js 15, TypeScript
 - 📊 **Analytics**: Track menu performance and customer engagement
 
 ### Business Features
+
 - Multiple business support per user
 - Working hours management
 - Contact information and social media links
@@ -22,6 +24,7 @@ A comprehensive digital menu management system built with Next.js 15, TypeScript
 - Business features and amenities
 
 ### Menu Features
+
 - Category-based organization
 - Rich item descriptions with images
 - Pricing with original price support (for discounts)
@@ -33,6 +36,7 @@ A comprehensive digital menu management system built with Next.js 15, TypeScript
 - Featured and popular item marking
 
 ### Technical Features
+
 - Server-side rendering with Next.js 15
 - TypeScript for type safety
 - MongoDB with Mongoose ODM
@@ -58,22 +62,26 @@ A comprehensive digital menu management system built with Next.js 15, TypeScript
 ## Installation
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - MongoDB instance (local or cloud)
 - Git
 
 ### Clone the Repository
+
 ```bash
 git clone https://github.com/yourusername/best-menu.git
 cd best-menu
 ```
 
 ### Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### Environment Setup
+
 Create a `.env.local` file in the root directory:
 
 ```env
@@ -105,9 +113,11 @@ NODE_ENV=development
 ```
 
 ### Database Setup
+
 Make sure your MongoDB instance is running. The application will automatically create the necessary collections and indexes.
 
 ### Run the Development Server
+
 ```bash
 npm run dev
 ```
@@ -115,6 +125,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Build for Production
+
 ```bash
 npm run build
 npm run start
@@ -123,7 +134,7 @@ npm run start
 ## Project Structure
 
 ```
-best-menu/
+menutap/
 ├── src/
 │   ├── app/
 │   │   ├── (private)/
@@ -165,6 +176,7 @@ best-menu/
 ### Authentication
 
 #### Register
+
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -179,6 +191,7 @@ Content-Type: application/json
 ```
 
 #### Login
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -192,6 +205,7 @@ Content-Type: application/json
 ### Business Management
 
 #### Create Business
+
 ```http
 POST /api/businesses
 Authorization: Bearer <token>
@@ -225,18 +239,21 @@ Content-Type: application/json
 ```
 
 #### Get Businesses
+
 ```http
 GET /api/businesses?owner=me&page=1&limit=10
 Authorization: Bearer <token>
 ```
 
 #### Get Single Business
+
 ```http
 GET /api/businesses/:id
 Authorization: Bearer <token>
 ```
 
 #### Update Business
+
 ```http
 PUT /api/businesses/:id
 Authorization: Bearer <token>
@@ -249,6 +266,7 @@ Content-Type: application/json
 ```
 
 #### Delete Business
+
 ```http
 DELETE /api/businesses/:id
 Authorization: Bearer <token>
@@ -257,6 +275,7 @@ Authorization: Bearer <token>
 ### Category Management
 
 #### Create Category
+
 ```http
 POST /api/categories
 Authorization: Bearer <token>
@@ -275,6 +294,7 @@ Content-Type: application/json
 ```
 
 #### Get Categories
+
 ```http
 GET /api/categories?businessId=business_id&page=1&limit=20
 Authorization: Bearer <token>
@@ -283,6 +303,7 @@ Authorization: Bearer <token>
 ### Menu Items Management
 
 #### Create Menu Item
+
 ```http
 POST /api/menu-items
 Authorization: Bearer <token>
@@ -317,6 +338,7 @@ Content-Type: application/json
 ```
 
 #### Get Menu Items
+
 ```http
 GET /api/menu-items?businessId=business_id&categoryId=category_id&page=1&limit=20
 Authorization: Bearer <token>
@@ -325,6 +347,7 @@ Authorization: Bearer <token>
 ## Database Schema
 
 ### User Model
+
 - Email and password authentication
 - Profile information (firstName, lastName, phone)
 - Role-based access (customer, admin)
@@ -332,6 +355,7 @@ Authorization: Bearer <token>
 - Password reset functionality
 
 ### Business Model
+
 - Complete business information
 - Owner relationship
 - Address with coordinates support
@@ -341,6 +365,7 @@ Authorization: Bearer <token>
 - Custom settings and theme colors
 
 ### Category Model
+
 - Hierarchical menu organization
 - Multi-language support (Persian/English)
 - Visibility and availability controls
@@ -348,6 +373,7 @@ Authorization: Bearer <token>
 - SEO optimization
 
 ### MenuItem Model
+
 - Comprehensive product information
 - Pricing with discount support
 - Nutritional information
@@ -360,6 +386,7 @@ Authorization: Bearer <token>
 ## Features Overview
 
 ### Customer Panel
+
 - **Dashboard**: Overview of all businesses and quick stats
 - **Business Management**: Create, edit, and manage restaurant information
 - **Menu Builder**: Visual menu creation with drag-and-drop ordering
@@ -370,6 +397,7 @@ Authorization: Bearer <token>
 - **Preview**: Real-time menu preview
 
 ### Public Menu Display
+
 - **Mobile-First Design**: Optimized for mobile devices
 - **Fast Loading**: Server-side rendering for optimal performance
 - **Search & Filter**: Easy item discovery
@@ -381,6 +409,7 @@ Authorization: Bearer <token>
 ## Customization
 
 ### Theme Colors
+
 The application supports custom color schemes through CSS variables:
 
 ```css
@@ -394,11 +423,13 @@ The application supports custom color schemes through CSS variables:
 ```
 
 ### Adding Custom Components
+
 1. Create component in `src/components/ui/`
 2. Export from component file
 3. Import and use in your pages
 
 ### Styling Guidelines
+
 - Use Tailwind CSS classes for styling
 - Follow the existing color scheme
 - Maintain responsive design principles
@@ -407,18 +438,21 @@ The application supports custom color schemes through CSS variables:
 ## Development Guidelines
 
 ### Code Style
+
 - Use TypeScript for all new files
 - Follow ESLint configuration
 - Use Prettier for code formatting
 - Write descriptive commit messages
 
 ### Database Guidelines
+
 - Use Mongoose schema validation
 - Add appropriate indexes for performance
 - Include error handling in all queries
 - Use transactions for complex operations
 
 ### API Guidelines
+
 - Follow RESTful conventions
 - Include proper error handling
 - Validate all inputs
@@ -428,11 +462,13 @@ The application supports custom color schemes through CSS variables:
 ## Deployment
 
 ### Vercel Deployment
+
 1. Connect your GitHub repository to Vercel
 2. Add environment variables in Vercel dashboard
 3. Deploy automatically on git push
 
 ### Docker Deployment
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -445,6 +481,7 @@ CMD ["npm", "start"]
 ```
 
 ### Environment Variables for Production
+
 ```env
 MONGODB_URI=your-production-mongodb-uri
 JWT_SECRET=your-production-jwt-secret

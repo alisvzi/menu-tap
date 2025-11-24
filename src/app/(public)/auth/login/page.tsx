@@ -57,9 +57,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <LogIn className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            ورود به بست منو
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground">ورود به منوتپ</h1>
           <p className="text-muted-foreground mt-2">
             به پنل مدیریت منوی دیجیتال خود وارد شوید
           </p>

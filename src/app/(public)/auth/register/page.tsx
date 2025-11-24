@@ -76,7 +76,7 @@ export default function RegisterPage() {
             <UserPlus className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            ثبت‌نام در بست منو
+            ثبت‌نام در منوتپ
           </h1>
           <p className="text-muted-foreground mt-2">
             منوی دیجیتال خود را ایجاد و مدیریت کنید

@@ -1,44 +1,70 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/forms/field";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/forms/field";
-import { ticketSchema, contactSchema, type TicketFormData, type ContactFormData } from "./_types/support-schema";
-import { 
-  HelpCircle, 
-  MessageCircle, 
-  Phone, 
-  Mail, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle,
-  Send,
-  Search,
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
   Book,
-  Video,
-  FileText,
+  Clock,
   ExternalLink,
+  FileText,
+  HelpCircle,
+  Mail,
+  MessageCircle,
+  Phone,
+  Search,
+  Send,
   Star,
+  ThumbsDown,
   ThumbsUp,
-  ThumbsDown
+  Video,
 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  contactSchema,
+  ticketSchema,
+  type ContactFormData,
+  type TicketFormData,
+} from "./_types/support-schema";
 
 interface Ticket {
   id: string;
   subject: string;
-  status: 'open' | 'pending' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: "open" | "pending" | "resolved" | "closed";
+  priority: "low" | "medium" | "high" | "urgent";
   createdAt: string;
   lastUpdate: string;
   category: string;
@@ -56,103 +82,107 @@ interface FAQ {
 export default function SupportPage() {
   const [tickets, setTickets] = useState<Ticket[]>([
     {
-      id: 'T-001',
-      subject: 'مشکل در آپلود تصاویر منو',
-      status: 'open',
-      priority: 'medium',
-      createdAt: '1402/08/20',
-      lastUpdate: '1402/08/22',
-      category: 'فنی'
+      id: "T-001",
+      subject: "مشکل در آپلود تصاویر منو",
+      status: "open",
+      priority: "medium",
+      createdAt: "1402/08/20",
+      lastUpdate: "1402/08/22",
+      category: "فنی",
     },
     {
-      id: 'T-002',
-      subject: 'سوال درباره قیمت‌گذاری',
-      status: 'resolved',
-      priority: 'low',
-      createdAt: '1402/08/15',
-      lastUpdate: '1402/08/16',
-      category: 'مالی'
-    }
+      id: "T-002",
+      subject: "سوال درباره قیمت‌گذاری",
+      status: "resolved",
+      priority: "low",
+      createdAt: "1402/08/15",
+      lastUpdate: "1402/08/16",
+      category: "مالی",
+    },
   ]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
   const ticketForm = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
-      subject: '',
-      category: '',
-      priority: 'medium',
-      description: ''
-    }
+      subject: "",
+      category: "",
+      priority: "medium",
+      description: "",
+    },
   });
 
   const contactForm = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    }
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+    },
   });
 
   const faqs: FAQ[] = [
     {
-      id: '1',
-      question: 'چگونه منوی جدید ایجاد کنم؟',
-      answer: 'برای ایجاد منوی جدید، به بخش "مدیریت منو" بروید و روی دکمه "افزودن آیتم جدید" کلیک کنید. سپس اطلاعات مورد نیاز را تکمیل کنید.',
-      category: 'منو',
+      id: "1",
+      question: "چگونه منوی جدید ایجاد کنم؟",
+      answer:
+        'برای ایجاد منوی جدید، به بخش "مدیریت منو" بروید و روی دکمه "افزودن آیتم جدید" کلیک کنید. سپس اطلاعات مورد نیاز را تکمیل کنید.',
+      category: "منو",
       helpful: 25,
-      notHelpful: 2
+      notHelpful: 2,
     },
     {
-      id: '2',
-      question: 'آیا می‌توانم چندین کسب‌وکار داشته باشم؟',
-      answer: 'بله، شما می‌توانید چندین کسب‌وکار را در یک حساب کاربری مدیریت کنید. هر کسب‌وکار منوی جداگانه‌ای خواهد داشت.',
-      category: 'حساب کاربری',
+      id: "2",
+      question: "آیا می‌توانم چندین کسب‌وکار داشته باشم؟",
+      answer:
+        "بله، شما می‌توانید چندین کسب‌وکار را در یک حساب کاربری مدیریت کنید. هر کسب‌وکار منوی جداگانه‌ای خواهد داشت.",
+      category: "حساب کاربری",
       helpful: 18,
-      notHelpful: 1
+      notHelpful: 1,
     },
     {
-      id: '3',
-      question: 'چگونه QR کد منو را دریافت کنم؟',
-      answer: 'پس از تکمیل منو، در بخش "پیش‌نمایش" می‌توانید QR کد منوی خود را مشاهده و دانلود کنید.',
-      category: 'QR کد',
+      id: "3",
+      question: "چگونه QR کد منو را دریافت کنم؟",
+      answer:
+        'پس از تکمیل منو، در بخش "پیش‌نمایش" می‌توانید QR کد منوی خود را مشاهده و دانلود کنید.',
+      category: "QR کد",
       helpful: 32,
-      notHelpful: 0
+      notHelpful: 0,
     },
     {
-      id: '4',
-      question: 'آیا امکان تغییر قالب منو وجود دارد؟',
-      answer: 'بله، در بخش "ظاهر و قالب" می‌توانید از قالب‌های مختلف استفاده کنید و ظاهر منوی خود را شخصی‌سازی کنید.',
-      category: 'ظاهر',
+      id: "4",
+      question: "آیا امکان تغییر قالب منو وجود دارد؟",
+      answer:
+        'بله، در بخش "ظاهر و قالب" می‌توانید از قالب‌های مختلف استفاده کنید و ظاهر منوی خود را شخصی‌سازی کنید.',
+      category: "ظاهر",
       helpful: 22,
-      notHelpful: 3
-    }
+      notHelpful: 3,
+    },
   ];
 
   const submitTicket = async (data: TicketFormData) => {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       const ticket: Ticket = {
-        id: `T-${String(tickets.length + 1).padStart(3, '0')}`,
+        id: `T-${String(tickets.length + 1).padStart(3, "0")}`,
         subject: data.subject,
-        status: 'open',
+        status: "open",
         priority: data.priority,
-        createdAt: new Date().toLocaleDateString('fa-IR'),
-        lastUpdate: new Date().toLocaleDateString('fa-IR'),
-        category: data.category
+        createdAt: new Date().toLocaleDateString("fa-IR"),
+        lastUpdate: new Date().toLocaleDateString("fa-IR"),
+        category: data.category,
       };
 
-      setTickets(prev => [ticket, ...prev]);
+      setTickets((prev) => [ticket, ...prev]);
       ticketForm.reset();
     } catch (error) {
-      console.error('Error submitting ticket:', error);
+      console.error("Error submitting ticket:", error);
     } finally {
       setLoading(false);
     }
@@ -162,15 +192,17 @@ export default function SupportPage() {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       console.log("پیام ارسال شد:", data);
       contactForm.reset();
-      
+
       // Show success message
-      alert("پیام شما با موفقیت ارسال شد. در کمتر از ۲۴ ساعت پاسخ خواهید گرفت.");
+      alert(
+        "پیام شما با موفقیت ارسال شد. در کمتر از ۲۴ ساعت پاسخ خواهید گرفت."
+      );
     } catch (error) {
-      console.error('Error submitting contact message:', error);
+      console.error("Error submitting contact message:", error);
     } finally {
       setLoading(false);
     }
@@ -178,42 +210,51 @@ export default function SupportPage() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      open: 'default',
-      pending: 'secondary',
-      resolved: 'outline',
-      closed: 'destructive'
-    };
-    
-    const labels = {
-      open: 'باز',
-      pending: 'در انتظار',
-      resolved: 'حل شده',
-      closed: 'بسته'
+      open: "default",
+      pending: "secondary",
+      resolved: "outline",
+      closed: "destructive",
     };
 
-    return <Badge variant={variants[status as keyof typeof variants] as any}>{labels[status as keyof typeof labels]}</Badge>;
+    const labels = {
+      open: "باز",
+      pending: "در انتظار",
+      resolved: "حل شده",
+      closed: "بسته",
+    };
+
+    return (
+      <Badge variant={variants[status as keyof typeof variants] as any}>
+        {labels[status as keyof typeof labels]}
+      </Badge>
+    );
   };
 
   const getPriorityBadge = (priority: string) => {
     const variants = {
-      low: 'outline',
-      medium: 'secondary',
-      high: 'default',
-      urgent: 'destructive'
-    };
-    
-    const labels = {
-      low: 'کم',
-      medium: 'متوسط',
-      high: 'بالا',
-      urgent: 'فوری'
+      low: "outline",
+      medium: "secondary",
+      high: "default",
+      urgent: "destructive",
     };
 
-    return <Badge variant={variants[priority as keyof typeof variants] as any}>{labels[priority as keyof typeof labels]}</Badge>;
+    const labels = {
+      low: "کم",
+      medium: "متوسط",
+      high: "بالا",
+      urgent: "فوری",
+    };
+
+    return (
+      <Badge variant={variants[priority as keyof typeof variants] as any}>
+        {labels[priority as keyof typeof labels]}
+      </Badge>
+    );
   };
 
-  const filteredFAQs = faqs.filter(faq => 
-    faq.question.includes(searchQuery) || faq.answer.includes(searchQuery)
+  const filteredFAQs = faqs.filter(
+    (faq) =>
+      faq.question.includes(searchQuery) || faq.answer.includes(searchQuery)
   );
 
   return (
@@ -285,7 +326,9 @@ export default function SupportPage() {
                         <p className="text-muted-foreground">{faq.answer}</p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <span className="text-sm text-muted-foreground">آیا این پاسخ مفید بود؟</span>
+                            <span className="text-sm text-muted-foreground">
+                              آیا این پاسخ مفید بود؟
+                            </span>
                             <div className="flex items-center gap-2">
                               <Button variant="outline" size="sm">
                                 <ThumbsUp className="h-4 w-4 ml-1" />
@@ -331,7 +374,10 @@ export default function SupportPage() {
                   {tickets.length > 0 ? (
                     <div className="space-y-4">
                       {tickets.map((ticket) => (
-                        <div key={ticket.id} className="border rounded-lg p-4 space-y-3">
+                        <div
+                          key={ticket.id}
+                          className="border rounded-lg p-4 space-y-3"
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="font-medium">#{ticket.id}</span>
@@ -340,14 +386,14 @@ export default function SupportPage() {
                             </div>
                             <Badge variant="outline">{ticket.category}</Badge>
                           </div>
-                          
+
                           <h4 className="font-medium">{ticket.subject}</h4>
-                          
+
                           <div className="flex items-center justify-between text-sm text-muted-foreground">
                             <span>ایجاد شده: {ticket.createdAt}</span>
                             <span>آخرین بروزرسانی: {ticket.lastUpdate}</span>
                           </div>
-                          
+
                           <Button variant="outline" size="sm">
                             مشاهده جزئیات
                           </Button>
@@ -377,7 +423,10 @@ export default function SupportPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Form {...ticketForm}>
-                    <form onSubmit={ticketForm.handleSubmit(submitTicket)} className="space-y-4">
+                    <form
+                      onSubmit={ticketForm.handleSubmit(submitTicket)}
+                      className="space-y-4"
+                    >
                       <FormField
                         control={ticketForm.control}
                         name="subject"
@@ -401,7 +450,10 @@ export default function SupportPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>دسته‌بندی</FormLabel>
-                            <Select value={field.value} onValueChange={field.onChange}>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="انتخاب دسته‌بندی" />
@@ -409,10 +461,14 @@ export default function SupportPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="فنی">مشکل فنی</SelectItem>
-                                <SelectItem value="حساب کاربری">حساب کاربری</SelectItem>
+                                <SelectItem value="حساب کاربری">
+                                  حساب کاربری
+                                </SelectItem>
                                 <SelectItem value="مالی">مسائل مالی</SelectItem>
                                 <SelectItem value="منو">مدیریت منو</SelectItem>
-                                <SelectItem value="عمومی">سوال عمومی</SelectItem>
+                                <SelectItem value="عمومی">
+                                  سوال عمومی
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -426,7 +482,10 @@ export default function SupportPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>اولویت</FormLabel>
-                            <Select value={field.value} onValueChange={field.onChange}>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
@@ -462,7 +521,7 @@ export default function SupportPage() {
                         )}
                       />
 
-                      <Button 
+                      <Button
                         type="submit"
                         disabled={loading}
                         className="w-full"
@@ -498,8 +557,12 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">تلفن پشتیبانی</h4>
-                    <p className="text-sm text-muted-foreground">021-12345678</p>
-                    <p className="text-xs text-muted-foreground">شنبه تا پنج‌شنبه، 9 تا 18</p>
+                    <p className="text-sm text-muted-foreground">
+                      021-12345678
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      شنبه تا پنج‌شنبه، 9 تا 18
+                    </p>
                   </div>
                 </div>
 
@@ -509,8 +572,12 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">ایمیل پشتیبانی</h4>
-                    <p className="text-sm text-muted-foreground">support@bestmenu.ir</p>
-                    <p className="text-xs text-muted-foreground">پاسخ در کمتر از 24 ساعت</p>
+                    <p className="text-sm text-muted-foreground">
+                      support@bestmenu.ir
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      پاسخ در کمتر از 24 ساعت
+                    </p>
                   </div>
                 </div>
 
@@ -520,8 +587,12 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">چت آنلاین</h4>
-                    <p className="text-sm text-muted-foreground">پشتیبانی زنده</p>
-                    <p className="text-xs text-muted-foreground">شنبه تا پنج‌شنبه، 9 تا 18</p>
+                    <p className="text-sm text-muted-foreground">
+                      پشتیبانی زنده
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      شنبه تا پنج‌شنبه، 9 تا 18
+                    </p>
                   </div>
                 </div>
 
@@ -559,7 +630,10 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Form {...contactForm}>
-                  <form onSubmit={contactForm.handleSubmit(submitContact)} className="space-y-4">
+                  <form
+                    onSubmit={contactForm.handleSubmit(submitContact)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={contactForm.control}
                       name="name"
@@ -602,10 +676,7 @@ export default function SupportPage() {
                         <FormItem>
                           <FormLabel>موضوع</FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="موضوع پیام"
-                            />
+                            <Input {...field} placeholder="موضوع پیام" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -619,7 +690,7 @@ export default function SupportPage() {
                         <FormItem>
                           <FormLabel>پیام</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               {...field}
                               placeholder="پیام خود را اینجا بنویسید..."
                               rows={5}
@@ -630,11 +701,7 @@ export default function SupportPage() {
                       )}
                     />
 
-                    <Button 
-                      type="submit" 
-                      disabled={loading}
-                      className="w-full"
-                    >
+                    <Button type="submit" disabled={loading} className="w-full">
                       <Send className="ml-2 h-4 w-4" />
                       ارسال پیام
                     </Button>
@@ -656,19 +723,23 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm">شروع کار با بست منو</h4>
-                  <p className="text-xs text-muted-foreground">آموزش کامل راه‌اندازی اولین منو</p>
+                  <h4 className="font-medium text-sm">شروع کار با منوتپ</h4>
+                  <p className="text-xs text-muted-foreground">
+                    آموزش کامل راه‌اندازی اولین منو
+                  </p>
                   <Button variant="outline" size="sm" className="w-full">
                     <ExternalLink className="ml-2 h-4 w-4" />
                     مشاهده ویدیو
                   </Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">مدیریت دسته‌بندی‌ها</h4>
-                  <p className="text-xs text-muted-foreground">نحوه ایجاد و مدیریت دسته‌بندی‌های منو</p>
+                  <p className="text-xs text-muted-foreground">
+                    نحوه ایجاد و مدیریت دسته‌بندی‌های منو
+                  </p>
                   <Button variant="outline" size="sm" className="w-full">
                     <ExternalLink className="ml-2 h-4 w-4" />
                     مشاهده ویدیو
@@ -687,18 +758,22 @@ export default function SupportPage() {
               <CardContent className="space-y-3">
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">راهنمای کامل</h4>
-                  <p className="text-xs text-muted-foreground">مستندات کامل استفاده از سیستم</p>
+                  <p className="text-xs text-muted-foreground">
+                    مستندات کامل استفاده از سیستم
+                  </p>
                   <Button variant="outline" size="sm" className="w-full">
                     <ExternalLink className="ml-2 h-4 w-4" />
                     مطالعه راهنما
                   </Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">نکات و ترفندها</h4>
-                  <p className="text-xs text-muted-foreground">بهترین شیوه‌های استفاده از سیستم</p>
+                  <p className="text-xs text-muted-foreground">
+                    بهترین شیوه‌های استفاده از سیستم
+                  </p>
                   <Button variant="outline" size="sm" className="w-full">
                     <ExternalLink className="ml-2 h-4 w-4" />
                     مطالعه نکات
@@ -717,18 +792,22 @@ export default function SupportPage() {
               <CardContent className="space-y-3">
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">وبلاگ</h4>
-                  <p className="text-xs text-muted-foreground">مقالات و اخبار مرتبط با رستوران‌داری</p>
+                  <p className="text-xs text-muted-foreground">
+                    مقالات و اخبار مرتبط با رستوران‌داری
+                  </p>
                   <Button variant="outline" size="sm" className="w-full">
                     <ExternalLink className="ml-2 h-4 w-4" />
                     مطالعه وبلاگ
                   </Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">انجمن کاربران</h4>
-                  <p className="text-xs text-muted-foreground">تبادل تجربه با سایر کاربران</p>
+                  <p className="text-xs text-muted-foreground">
+                    تبادل تجربه با سایر کاربران
+                  </p>
                   <Button variant="outline" size="sm" className="w-full">
                     <ExternalLink className="ml-2 h-4 w-4" />
                     ورود به انجمن
