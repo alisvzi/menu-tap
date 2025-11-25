@@ -38,7 +38,9 @@ async function getMenuData(slug: string): Promise<MenuData | null> {
       provider: provider._id,
     },
     "name nameEn slug"
-  ).lean()) as unknown as Category[];
+  )
+    .sort({ order: 1 })
+    .lean()) as unknown as Category[];
 
   return { provider, categories };
 }
