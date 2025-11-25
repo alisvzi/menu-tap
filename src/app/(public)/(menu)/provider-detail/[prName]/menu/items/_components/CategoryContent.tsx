@@ -77,7 +77,7 @@ function transformItemsToMockFormat(
     const titleFa =
       item.subcategory && dict[item.subcategory]?.fa
         ? dict[item.subcategory].fa
-        : "بدون دسته‌بندی";
+        : "";
     const titleEn =
       item.subcategory && dict[item.subcategory]?.en
         ? dict[item.subcategory].en
