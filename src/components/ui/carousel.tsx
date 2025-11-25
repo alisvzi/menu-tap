@@ -132,7 +132,7 @@ function Carousel({
   );
 }
 
-function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
+function CarouselContent({ className, style, ...props }: React.ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel();
 
   return (
@@ -144,16 +144,21 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
       <div
         className={cn(
           "flex",
-          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          orientation === "horizontal" ? "" : "flex-col",
           className
         )}
+        style={
+          orientation === "horizontal"
+            ? { marginInlineStart: "-1rem", ...(style as any) }
+            : { marginTop: "-1rem", ...(style as any) }
+        }
         {...props}
       />
     </div>
   );
 }
 
-function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
+function CarouselItem({ className, style, ...props }: React.ComponentProps<"div">) {
   const { orientation } = useCarousel();
 
   return (
@@ -163,9 +168,14 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="carousel-item"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? "pl-4" : "pt-4",
+        orientation === "horizontal" ? "" : "pt-4",
         className
       )}
+      style={
+        orientation === "horizontal"
+          ? { paddingInlineStart: "1rem", ...(style as any) }
+          : { ...(style as any) }
+      }
       {...props}
     />
   );

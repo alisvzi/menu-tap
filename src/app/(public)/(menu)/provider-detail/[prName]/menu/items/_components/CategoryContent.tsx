@@ -13,6 +13,10 @@ interface MenuItemType {
   price: string;
   currency: string;
   isFeatured?: boolean;
+  images?: string[];
+  originalPrice?: number;
+  isSpecialOffer?: boolean;
+  slug?: string;
 }
 
 interface MenuGroup {
@@ -98,6 +102,10 @@ function transformItemsToMockFormat(
       price: item.price?.toString() || "0",
       currency: "تومان",
       isFeatured: item.isSpecial || false,
+      images: item.images || [],
+      originalPrice: item.originalPrice || undefined,
+      isSpecialOffer: item.isSpecial || false,
+      slug: item.slug,
     });
   });
 
@@ -133,8 +141,7 @@ const CategoryContent = async ({ category, prName }: CategoryContentProps) => {
   );
   const menuGroups = transformItemsToMockFormat(data.items, dict);
 
-  console.log(menuGroups, "menuGroups");
-  console.log(data.items, "data.items");
+
 
   return (
     <div key={category} className="pt-[170px] min-h-[100vh] px-3">

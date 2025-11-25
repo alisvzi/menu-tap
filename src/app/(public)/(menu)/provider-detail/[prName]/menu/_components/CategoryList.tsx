@@ -23,7 +23,7 @@ export default function CategoryList({
   }
 
   return (
-    <div className="p-4">
+    <>
       <h2 className="text-lg font-semibold my-6">دسته‌بندی‌های منو</h2>
       <ItemGroup className="gap-3">
         {categories.map((category, i) => (
@@ -41,6 +41,6 @@ export default function CategoryList({
           </FadeInItem>
         ))}
       </ItemGroup>
-    </div>
+    </>
   );
 }

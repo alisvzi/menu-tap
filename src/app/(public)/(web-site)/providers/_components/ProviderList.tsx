@@ -15,7 +15,6 @@ interface ProviderListProps {
 }
 
 const ProviderList = ({ providers, isSkeleton = false }: ProviderListProps) => {
-  console.log(providers, "providers");
   if (providers?.length === 0) {
     return (
       <div className="container my-10">

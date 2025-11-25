@@ -51,7 +51,6 @@ export default async function Category({
   const { category } = await searchParams;
 
   const menuData = await getMenuData(prName);
-  console.log(menuData?.categories);
   // const catSlug = searchParams.get("category");
 
   // Server-side data fetching

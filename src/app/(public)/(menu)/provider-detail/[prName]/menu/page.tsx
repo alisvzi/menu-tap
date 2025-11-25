@@ -26,7 +26,9 @@ async function fetchMenuData(slug: string): Promise<MenuData | null> {
 
   const categories = (await CategoryModel.find({
     provider: provider._id,
-  }).lean()) as unknown as Category[];
+  })
+    .sort({ order: 1 })
+    .lean()) as unknown as Category[];
 
   return { provider, categories };
 }
@@ -34,13 +36,12 @@ async function fetchMenuData(slug: string): Promise<MenuData | null> {
 export default async function MenuCategories({ params }: MenuCategoriesProps) {
   const { prName } = await params;
   const menuData = await fetchMenuData(prName);
-  console.log(menuData);
   if (!menuData) return notFound();
 
   const { provider, categories } = menuData;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-hidden bg-background">
       <div className="pt-24 pb-8 bg-rose-gold-muted dark:bg-card border-b border-border shadow relative overflow-hidden">
         <div className="-left-35 absolute w-[200px] h-[200px] bg-rose-gold-dark/20 rotate-60"></div>
         <div className="-left-35 bottom-18 absolute w-[200px] h-[200px] bg-rose-gold-dark/20 -rotate-60"></div>
@@ -68,8 +69,9 @@ export default async function MenuCategories({ params }: MenuCategoriesProps) {
           </div>
         </div>
       </div>
-
-      <CategoryList categories={categories} providerSlug={prName} />
+      <div className="p-4">
+        <CategoryList categories={categories} providerSlug={prName} />
+      </div>
     </div>
   );
 }

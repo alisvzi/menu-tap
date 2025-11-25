@@ -26,7 +26,6 @@ export default function CategoryCard({
   category,
   providerSlug,
 }: CategoryCardProps) {
-  console.log(category, "categorydd");
   return (
     // <Link href={`/provider-detail/${providerSlug}/menu/items/${category.slug}`}>
     //   <div className="bg-card rounded-lg overflow-hidden shadow-sm border border-border hover:shadow-md transition-shadow">

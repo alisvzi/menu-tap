@@ -24,6 +24,10 @@ interface MenuItemProps {
   price?: string | number;
   currency?: string;
   isFeatured?: boolean;
+  images?: string[];
+  originalPrice?: number;
+  isSpecialOffer?: boolean;
+  slug?: string;
 }
 
 export default function MenuItem({
@@ -34,6 +38,10 @@ export default function MenuItem({
   price = "--",
   currency = "تومان",
   isFeatured = false,
+  images = [],
+  originalPrice,
+  isSpecialOffer = false,
+  slug,
 }: MenuItemProps) {
   const [open, setOpen] = useState(false);
 
@@ -94,7 +102,7 @@ export default function MenuItem({
         onClick={() => setOpen(true)}
       >
         <ItemMedia>
-          <div className="w-24 h-24 overflow-hidden rounded-xl">
+          <div className="w-24 h-24 overflow-hidden rounded-xl border-2 border-border">
             <Image
               src={image}
               alt={`${nameFa} - ${nameEn}`}
@@ -132,16 +140,18 @@ export default function MenuItem({
 
       <ItemDetailDrawer
         item={{
-          images: [
-            "/uploads/6901e14502e0bdbd8a592335/menu-items/new-1761754981407-e1jhg3.jpg",
-          ],
-          name_fa: "تست",
-          name_en: "DSD",
-          price: 1200,
-          originalPrice: 11996,
-          ingredients: [],
-          isSpecialOffer: false,
-          isPopular: false,
+          images: images.length ? images : image ? [image] : [],
+          name_fa: nameFa,
+          name_en: nameEn,
+          price: Number(price) || 0,
+          originalPrice,
+          ingredients: Array.isArray(ingredients)
+            ? ingredients
+            : ingredients
+            ? [ingredients]
+            : [],
+          isSpecialOffer,
+          isPopular: isFeatured,
         }}
         open={open}
         setOpen={setOpen}

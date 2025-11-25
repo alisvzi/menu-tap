@@ -25,7 +25,10 @@ export default function CategorySelectSlider({
     return param || initialCategory;
   });
 
-  const opts = useMemo(() => ({ align: "center", loop: false } as any), []);
+  const opts = useMemo(
+    () => ({ align: "start", loop: false, direction: "rtl" } as any),
+    []
+  );
 
   useEffect(() => {
     if (!api) return;
@@ -65,9 +68,10 @@ export default function CategorySelectSlider({
     <Carousel
       opts={opts}
       setApi={setApi}
-      className="w-full px-2 pb-3 overflow-auto" // Fix #2
+      className="w-full px-2 pb-3 overflow-auto"
+      dir="rtl"
     >
-      <CarouselContent>
+      <CarouselContent dir="rtl">
         {categories.map((category) => {
           const isActive = selected === category.slug;
           return (
