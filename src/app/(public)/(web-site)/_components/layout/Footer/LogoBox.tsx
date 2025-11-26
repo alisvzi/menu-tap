@@ -11,6 +11,7 @@ const LogoBox = () => {
         alt="Site Logo Light"
         fill
         className="block dark:hidden"
+        loading="eager"
       />
 
       {/* Dark Logo */}
@@ -19,6 +20,7 @@ const LogoBox = () => {
         alt="Site Logo Dark"
         fill
         className="hidden dark:block"
+        loading="eager"
       />
     </div>
   );

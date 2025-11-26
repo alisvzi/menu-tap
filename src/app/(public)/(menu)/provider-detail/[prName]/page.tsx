@@ -49,6 +49,7 @@ export default async function ProviderDetailPage({
           alt={provider.name}
           fill
           priority
+          loading="eager"
           className="object-cover"
         />
 
@@ -99,6 +100,7 @@ export default async function ProviderDetailPage({
               alt={provider.name}
               fill
               className="object-cover rounded-full"
+              loading="eager"
             />
           </div>
         </div>

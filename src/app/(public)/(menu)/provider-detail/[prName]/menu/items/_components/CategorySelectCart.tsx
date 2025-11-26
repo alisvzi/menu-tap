@@ -6,7 +6,11 @@ interface CategorySelectCartProps {
   isActive: boolean;
 }
 
-const CategorySelectCart = ({ category, handleSelect, isActive }: CategorySelectCartProps) => {
+const CategorySelectCart = ({
+  category,
+  handleSelect,
+  isActive,
+}: CategorySelectCartProps) => {
   return (
     <CarouselItem key={category.slug} className="basis-1/2 min-w-[80px]">
       <button
