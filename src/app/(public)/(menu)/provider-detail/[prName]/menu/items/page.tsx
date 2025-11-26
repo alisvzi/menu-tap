@@ -4,6 +4,7 @@ import CategoryContent from "./_components/CategoryContent";
 import CategorySelectSlider from "./_components/CategorySelectSlider";
 import ScrollReset from "./_components/ScrollReset";
 
+import { connectDB } from "@/lib/db/connection";
 import CategoryModel from "@/lib/models/Category";
 import MenuItemModel from "@/lib/models/MenuItem";
 import ProviderModel from "@/lib/models/Provider";
@@ -50,6 +51,7 @@ async function getMenuData(slug: string): Promise<{
   categories: Category[];
   menuGroupsByCategory: MenuGroupsByCategory;
 } | null> {
+  await connectDB();
   const provider = await ProviderModel.findOne({ slug }, "_id").lean();
   if (!provider) return null;
 
